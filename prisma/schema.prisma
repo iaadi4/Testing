@@ -1,0 +1,51 @@
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Sponsor {
+  id             String    @id @default(cuid())
+  companyName    String
+  logoUrl        String?
+  tagline        String?
+  websiteUrl     String
+  twitterHandle  String?
+  email          String
+  bannerImageUrl String
+  durationType    String    // "WEEK" | "MONTH" | "YEAR" | "LIFETIME" | "OUTBID"
+  amountPaid     Float
+  status         String    @default("ACTIVE") // "ACTIVE" | "QUEUED" | "EXPIRED" | "PENDING"
+  startDate      DateTime?
+  endDate        DateTime?
+  dodoPaymentId  String?
+  isOutbid       Boolean   @default(false)
+  outbidById     String?
+  clicksCount    Int       @default(0)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+}
+
+model SiteSetting {
+  id                  String   @id @default("default")
+  activeSponsorId     String?
+  defaultBannerUrl    String   @default("/banner-moon.png")
+  twitterHandle       String   @default("@iaadi8")
+  profileName         String   @default("Aditya")
+  profileBio          String   @default("SWE Intern | 21 • twitterbanner.lol")
+  profileLocation     String   @default("India")
+  profileWebsite      String   @default("adityacodes.site")
+  followingCount      Int      @default(85)
+  followersCount      Int      @default(109)
+  weekPrice           Float    @default(29.0)
+  monthPrice          Float    @default(89.0)
+  yearPrice           Float    @default(499.0)
+  lifetimePrice       Float    @default(1299.0)
+  minOutbidIncrement  Float    @default(10.0)
+  totalVisits         Int      @default(0)
+  adminPassword       String   @default("admin123")
+  updatedAt           DateTime @updatedAt
+}
