@@ -53,3 +53,7 @@ next-env.d.ts
 # python
 __pycache__/
 *.pyc
+
+# agent tooling
+.agent/
+.agents/
