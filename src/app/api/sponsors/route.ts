@@ -217,7 +217,7 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    const rawOrigin = process.env.NEXT_PUBLIC_APP_URL || req.headers.get("origin") || req.headers.get("referer") || "https://twitterbanner.lol";
+    const rawOrigin = process.env.APP_URL || process.env.NEXT_PUBLIC_APP_URL || req.headers.get("origin") || req.headers.get("referer") || "https://twitterbanner.lol";
     let origin = "https://twitterbanner.lol";
     try {
       origin = new URL(rawOrigin).origin;
