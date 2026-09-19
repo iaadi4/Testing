@@ -23,7 +23,7 @@ export default function HomePage() {
   const fetchData = async (recordVisit: boolean = false) => {
     try {
       const url = recordVisit ? "/api/sponsors?record_visit=1" : "/api/sponsors";
-      const res = await fetch(url);
+      const res = await fetch(url, { cache: "no-store" });
       if (res.ok) {
         const json = await res.json();
         setData(json);
@@ -45,8 +45,8 @@ export default function HomePage() {
       fetchData(false);
     }
 
-    // Refresh every 15 seconds without re-incrementing visits
-    const interval = setInterval(() => fetchData(false), 15000);
+    // Refresh every 8 seconds without re-incrementing visits
+    const interval = setInterval(() => fetchData(false), 8000);
     return () => clearInterval(interval);
   }, []);
 

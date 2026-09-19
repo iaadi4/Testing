@@ -34,22 +34,57 @@ function SuccessContent() {
 
     const processOrder = async () => {
       try {
-        if (isMock) {
-          await fetch("/api/sponsor/confirm-mock", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ orderId }),
-          });
+        let resolvedSponsor = null;
+        let attempts = 0;
+
+        while (attempts < 6) {
+          attempts++;
+          try {
+            const verifyRes = await fetch("/api/sponsor/verify", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ orderId }),
+            });
+
+            if (verifyRes.ok) {
+              const verifyData = await verifyRes.json();
+              if (verifyData.success && verifyData.sponsor && verifyData.sponsor.status === "ACTIVE") {
+                resolvedSponsor = verifyData.sponsor;
+                break;
+              }
+            }
+          } catch (e) {
+            console.warn("Verify attempt error:", e);
+          }
+
+          const res = await fetch("/api/sponsors", { cache: "no-store" });
+          if (res.ok) {
+            const data = await res.json();
+            const found =
+              data.activeSponsor?.id === orderId
+                ? data.activeSponsor
+                : data.fallenKings?.find((s: any) => s.id === orderId);
+            if (found && found.status === "ACTIVE") {
+              resolvedSponsor = found;
+              break;
+            }
+          }
+
+          await new Promise((r) => setTimeout(r, 1500));
         }
 
-        const res = await fetch("/api/sponsors");
-        if (res.ok) {
-          const data = await res.json();
-          const found =
-            data.activeSponsor?.id === orderId
-              ? data.activeSponsor
-              : data.fallenKings?.find((s: any) => s.id === orderId);
-          setSponsor(found);
+        if (resolvedSponsor) {
+          setSponsor(resolvedSponsor);
+        } else {
+          const res = await fetch("/api/sponsors", { cache: "no-store" });
+          if (res.ok) {
+            const data = await res.json();
+            const found =
+              data.activeSponsor?.id === orderId
+                ? data.activeSponsor
+                : data.fallenKings?.find((s: any) => s.id === orderId);
+            setSponsor(found);
+          }
         }
       } catch (err) {
         console.error("Error confirming order:", err);
@@ -59,7 +94,7 @@ function SuccessContent() {
     };
 
     processOrder();
-  }, [orderId, isMock]);
+  }, [orderId]);
 
   return (
     <div className="min-h-screen bg-[#F4F4F0] text-black flex flex-col items-center justify-center p-4 selection:bg-[#FFE600] selection:text-black">

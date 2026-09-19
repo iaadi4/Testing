@@ -93,24 +93,32 @@ export async function GET(req: NextRequest) {
       _max: { amountPaid: true },
     });
 
-    return NextResponse.json({
-      settings: {
-        ...settings,
-        adminPassword: undefined,
+    return NextResponse.json(
+      {
+        settings: {
+          ...settings,
+          adminPassword: undefined,
+        },
+        activeSponsor,
+        currentPrice,
+        minBidToDethrone,
+        fallenKings,
+        allTimeChampions,
+        stats: {
+          totalBounties: statsAggregate._sum.amountPaid || 0,
+          totalBattles: statsAggregate._count.id || 0,
+          totalClicks: statsAggregate._sum.clicksCount || 0,
+          recordBounty: statsAggregate._max.amountPaid || 0,
+          totalVisits: settings.totalVisits || 0,
+        },
       },
-      activeSponsor,
-      currentPrice,
-      minBidToDethrone,
-      fallenKings,
-      allTimeChampions,
-      stats: {
-        totalBounties: statsAggregate._sum.amountPaid || 0,
-        totalBattles: statsAggregate._count.id || 0,
-        totalClicks: statsAggregate._sum.clicksCount || 0,
-        recordBounty: statsAggregate._max.amountPaid || 0,
-        totalVisits: settings.totalVisits || 0,
-      },
-    });
+      {
+        headers: {
+          "Cache-Control": "no-store, no-cache, must-revalidate, max-age=0",
+          Pragma: "no-cache",
+        },
+      }
+    );
   } catch (error: any) {
     console.error("Error fetching arena sponsors:", error);
     return NextResponse.json({ error: "Failed to fetch arena sponsors" }, { status: 500 });

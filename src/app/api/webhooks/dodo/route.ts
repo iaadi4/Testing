@@ -1,29 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { dodoClient } from "@/lib/dodopayments";
-
-function calculateEndDate(durationType: string, startDate: Date = new Date()): Date {
-  const end = new Date(startDate);
-  switch (durationType) {
-    case "WEEK":
-      end.setDate(end.getDate() + 7);
-      break;
-    case "MONTH":
-      end.setDate(end.getDate() + 30);
-      break;
-    case "YEAR":
-      end.setDate(end.getDate() + 365);
-      break;
-    case "LIFETIME":
-      end.setFullYear(end.getFullYear() + 100);
-      break;
-    case "OUTBID":
-    default:
-      end.setDate(end.getDate() + 7);
-      break;
-  }
-  return end;
-}
+import { activateSponsor } from "@/lib/sponsorActivation";
 
 export async function POST(req: NextRequest) {
   try {
@@ -49,13 +27,13 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: "Invalid webhook signature" }, { status: 401 });
       }
     } else {
-      // In production, NEVER accept unverified webhooks
+      // In production, reject if secret is missing
       if (isProduction) {
         console.error("DODO_WEBHOOK_SECRET is not configured in production. Rejecting unverified webhook.");
         return NextResponse.json({ error: "Webhook secret not configured" }, { status: 500 });
       }
 
-      // Only in local development fallback
+      // Local development fallback
       try {
         event = JSON.parse(rawBody);
       } catch {
@@ -68,68 +46,42 @@ export async function POST(req: NextRequest) {
     if (eventType === "payment.succeeded" || eventType === "payment_intent.succeeded") {
       const paymentData = event.data || event;
       const metadata = paymentData.metadata || {};
-      const sponsorId = metadata.sponsorId;
-      const paymentId = paymentData.payment_id || paymentData.id;
+      const sponsorId =
+        metadata.sponsorId ||
+        metadata.sponsor_id ||
+        metadata.orderId ||
+        metadata.order_id ||
+        metadata.id;
+      const paymentId = paymentData.payment_id || paymentData.id || event.id;
 
-      if (!sponsorId || typeof sponsorId !== "string") {
-        return NextResponse.json({ received: true, warning: "Missing sponsorId" }, { status: 200 });
+      let sponsor = null;
+      if (sponsorId && typeof sponsorId === "string") {
+        sponsor = await prisma.sponsor.findUnique({
+          where: { id: sponsorId },
+        });
       }
 
-      const sponsor = await prisma.sponsor.findUnique({
-        where: { id: sponsorId },
-      });
+      // Fallback: If sponsorId is not in metadata, look up the most recent PENDING sponsor by customer email
+      if (!sponsor && paymentData.customer?.email) {
+        sponsor = await prisma.sponsor.findFirst({
+          where: {
+            email: String(paymentData.customer.email).trim().toLowerCase(),
+            status: "PENDING",
+          },
+          orderBy: { createdAt: "desc" },
+        });
+      }
 
       if (!sponsor) {
-        return NextResponse.json({ error: "Sponsor not found" }, { status: 404 });
+        console.warn("Dodo webhook: No matching pending sponsor found for payload:", paymentData);
+        return NextResponse.json({ received: true, warning: "Sponsor not found" }, { status: 200 });
       }
 
-      // Idempotency: If already active with this payment ID, avoid duplicate processing
-      if (sponsor.status === "ACTIVE" && sponsor.dodoPaymentId === paymentId) {
-        return NextResponse.json({ received: true, message: "Already processed" }, { status: 200 });
-      }
+      // Activate sponsor and dethrone previous king
+      const activated = await activateSponsor(sponsor.id, paymentId);
+      console.log(`Dodo webhook: Sponsor ${sponsor.id} (${sponsor.companyName}) activated successfully!`);
 
-      const startDate = new Date();
-      const endDate = calculateEndDate(sponsor.durationType, startDate);
-
-      const settings = await prisma.siteSetting.findUnique({
-        where: { id: "default" },
-      });
-
-      let shouldMakeActive = true;
-      if (settings?.activeSponsorId && settings.activeSponsorId !== sponsor.id) {
-        const currentActive = await prisma.sponsor.findUnique({
-          where: { id: settings.activeSponsorId },
-        });
-
-        if (currentActive && (sponsor.durationType === "OUTBID" || sponsor.amountPaid >= currentActive.amountPaid)) {
-          await prisma.sponsor.update({
-            where: { id: currentActive.id },
-            data: {
-              isOutbid: true,
-              outbidById: sponsor.id,
-              status: "EXPIRED",
-            },
-          });
-          shouldMakeActive = true;
-        }
-      }
-
-      await prisma.sponsor.update({
-        where: { id: sponsor.id },
-        data: {
-          status: shouldMakeActive ? "ACTIVE" : "QUEUED",
-          startDate,
-          endDate,
-          dodoPaymentId: paymentId ? String(paymentId) : null,
-        },
-      });
-
-      if (shouldMakeActive) {
-        await prisma.siteSetting.update({
-          where: { id: "default" },
-          data: { activeSponsorId: sponsor.id },
-        });
-      }
+      return NextResponse.json({ received: true, activated: Boolean(activated) }, { status: 200 });
     }
 
     return NextResponse.json({ received: true }, { status: 200 });
