@@ -1,25 +1,9 @@
 import { prisma } from "@/lib/db";
 
-export function calculateEndDate(durationType: string, startDate: Date = new Date()): Date {
+export function calculateEndDate(_durationType?: string, startDate: Date = new Date()): Date {
   const end = new Date(startDate);
-  switch (durationType) {
-    case "WEEK":
-      end.setDate(end.getDate() + 7);
-      break;
-    case "MONTH":
-      end.setDate(end.getDate() + 30);
-      break;
-    case "YEAR":
-      end.setDate(end.getDate() + 365);
-      break;
-    case "LIFETIME":
-      end.setFullYear(end.getFullYear() + 100);
-      break;
-    case "OUTBID":
-    default:
-      end.setDate(end.getDate() + 7);
-      break;
-  }
+  // Reign persists indefinitely until dethroned by another contender
+  end.setFullYear(end.getFullYear() + 10);
   return end;
 }
 
@@ -50,7 +34,7 @@ export async function activateSponsor(sponsorId: string, paymentId?: string | nu
       where: { id: settings.activeSponsorId },
     });
 
-    if (currentActive && (sponsor.durationType === "OUTBID" || sponsor.amountPaid >= currentActive.amountPaid)) {
+    if (currentActive && sponsor.amountPaid >= currentActive.amountPaid) {
       await prisma.sponsor.update({
         where: { id: currentActive.id },
         data: {

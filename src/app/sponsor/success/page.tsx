@@ -4,13 +4,14 @@ import React, { useEffect, useState, Suspense } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import confetti from "canvas-confetti";
-import { Crown, ArrowLeft, ExternalLink, Loader2, Zap } from "lucide-react";
+import { ArrowLeft, ExternalLink, Loader2, CheckCircle2, Sparkles } from "lucide-react";
 import { playCashSound } from "@/lib/sound";
+import { Navbar } from "@/components/Navbar";
+import { Footer } from "@/components/Footer";
 
 function SuccessContent() {
   const searchParams = useSearchParams();
   const orderId = searchParams.get("order_id");
-  const isMock = searchParams.get("mock") === "true";
 
   const [sponsor, setSponsor] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -19,9 +20,9 @@ function SuccessContent() {
     try {
       playCashSound();
       confetti({
-        particleCount: 120,
-        spread: 80,
-        origin: { y: 0.5 },
+        particleCount: 80,
+        spread: 70,
+        origin: { y: 0.4 },
       });
     } catch (e) {
       console.error(e);
@@ -70,7 +71,7 @@ function SuccessContent() {
             }
           }
 
-          await new Promise((r) => setTimeout(r, 1500));
+          await new Promise((r) => setTimeout(r, 1200));
         }
 
         if (resolvedSponsor) {
@@ -97,75 +98,112 @@ function SuccessContent() {
   }, [orderId]);
 
   return (
-    <div className="min-h-screen bg-[#F4F4F0] text-black flex flex-col items-center justify-center p-4 selection:bg-[#FFE600] selection:text-black">
-      <div className="w-full max-w-md rounded-3xl bg-white border-4 border-black p-6 sm:p-8 text-center shadow-[10px_10px_0px_0px_#000]">
-        
-        {/* Crown Emblem */}
-        <div className="w-16 h-16 rounded-2xl bg-[#FFE600] text-black flex items-center justify-center mx-auto mb-4 border-3 border-black shadow-[4px_4px_0px_0px_#000]">
-          <Crown className="w-8 h-8 fill-black" />
-        </div>
+    <div className="min-h-screen bg-[#fafafa] bg-[radial-gradient(#e5e7eb_1.2px,transparent_1.2px)] [background-size:20px_20px] text-zinc-900 flex flex-col font-sans selection:bg-zinc-900 selection:text-white">
+      <Navbar />
 
-        <div className="inline-block px-3 py-1 rounded-full bg-[#CCFF00] text-black border-2 border-black text-xs font-mono font-black uppercase tracking-wider mb-3 shadow-xs">
-          👑 YOU HAVE CONQUERED THE THRONE
-        </div>
-
-        <h1 className="text-2xl sm:text-3xl font-black uppercase tracking-tight text-black">
-          LONG LIVE THE KING!
-        </h1>
-        <p className="text-xs font-mono text-zinc-600 mt-1.5 leading-relaxed">
-          Your takeover was confirmed. You are officially reigning over Aditya's (<a href="https://x.com/iaadi8" target="_blank" rel="noopener noreferrer" className="underline font-bold text-[#1D9BF0]">@iaadi8</a>) Twitter banner.
-        </p>
-
-        {loading ? (
-          <div className="py-8 flex items-center justify-center gap-2 text-black font-mono text-xs font-bold">
-            <Loader2 className="w-5 h-5 animate-spin" />
-            <span>COMMISSIONING THE BANNER...</span>
+      <main className="flex-1 max-w-xl mx-auto w-full px-4 sm:px-6 py-10 sm:py-16 flex flex-col items-center justify-center">
+        <div className="w-full bg-white rounded-2xl border border-zinc-200/80 p-6 sm:p-8 text-center shadow-xs space-y-6">
+          
+          {/* Animated Success Badge */}
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200/60 text-xs font-semibold text-emerald-800 shadow-2xs">
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+            <span>Takeover Confirmed</span>
           </div>
-        ) : (
-          <div className="mt-6 p-4 rounded-2xl bg-[#F8FAFC] border-2 border-black text-left text-xs font-mono space-y-2 shadow-[3px_3px_0px_0px_#000]">
-            <div className="flex justify-between py-1 border-b border-zinc-200">
-              <span className="text-zinc-500 font-bold">MONARCH</span>
-              <span className="font-black text-black">{sponsor?.companyName || "Contender"}</span>
-            </div>
-            <div className="flex justify-between py-1 border-b border-zinc-200">
-              <span className="text-zinc-500 font-bold">STRIKE BOUNTY</span>
-              <span className="font-black text-black">${sponsor?.amountPaid?.toFixed(2) || "1.00"} USD</span>
-            </div>
-            <div className="flex justify-between py-1 border-b border-zinc-200">
-              <span className="text-zinc-500 font-bold">REDIRECT URL</span>
-              <span className="font-bold text-black truncate max-w-[200px]">{sponsor?.websiteUrl || "—"}</span>
-            </div>
-            <div className="flex justify-between py-1">
-              <span className="text-zinc-500 font-bold">STATUS</span>
-              <span className="text-black font-black flex items-center gap-1.5 bg-[#CCFF00] px-2 py-0.5 rounded border border-black">
-                <span className="w-2 h-2 rounded-full bg-black animate-ping" />
-                ACTIVE ON 𝕏
-              </span>
-            </div>
+
+          <div className="space-y-1.5">
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-zinc-900 flex items-center justify-center gap-2">
+              <span>You own the banner!</span>
+              <Sparkles className="w-5 h-5 text-emerald-600" />
+            </h1>
+            <p className="text-xs sm:text-sm text-zinc-500 max-w-sm mx-auto leading-relaxed">
+              Your payment was processed successfully. You are now the reigning monarch on{" "}
+              <a href="https://x.com/iaadi8" target="_blank" rel="noopener noreferrer" className="text-zinc-900 font-medium hover:underline">
+                @iaadi8
+              </a>
+              .
+            </p>
           </div>
-        )}
 
-        <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3">
-          <Link
-            href="/"
-            className="w-full sm:w-auto px-5 py-3 bg-[#FFE600] hover:bg-[#edd400] text-black font-mono font-black text-xs uppercase rounded-xl border-2 border-black shadow-[3px_3px_0px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 transition-all flex items-center justify-center gap-2"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            <span>SEE YOUR ARENA</span>
-          </Link>
+          {loading ? (
+            <div className="py-10 flex flex-col items-center justify-center gap-3 text-zinc-500 text-xs">
+              <Loader2 className="w-5 h-5 animate-spin text-zinc-900" />
+              <span>Deploying your banner to the arena...</span>
+            </div>
+          ) : (
+            <div className="space-y-4 text-left">
+              {/* Live Banner Preview */}
+              {sponsor?.bannerImageUrl && (
+                <div className="relative aspect-[3/1] w-full rounded-xl overflow-hidden border border-zinc-200 bg-zinc-100 shadow-xs">
+                  <img
+                    src={sponsor.bannerImageUrl}
+                    alt={sponsor.companyName || "Your Banner"}
+                    className="w-full h-full object-cover"
+                  />
+                  <div className="absolute top-2.5 right-2.5 px-2.5 py-1 rounded-full bg-black/80 backdrop-blur-md text-white text-[10px] font-medium border border-white/10">
+                    Sponsored by {sponsor.companyName}
+                  </div>
+                </div>
+              )}
 
-          <a
-            href="https://x.com/iaadi8"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="w-full sm:w-auto px-5 py-3 rounded-xl bg-white hover:bg-zinc-100 text-black font-mono font-black text-xs uppercase border-2 border-black shadow-[3px_3px_0px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 transition-all flex items-center justify-center gap-2"
-          >
-            <span>VERIFY ON 𝕏</span>
-            <ExternalLink className="w-4 h-4" />
-          </a>
+              {/* Order Meta Box */}
+              <div className="p-4 rounded-xl bg-zinc-50/80 border border-zinc-200/80 text-xs space-y-2.5">
+                <div className="flex justify-between items-center py-0.5 border-b border-zinc-200/60">
+                  <span className="text-zinc-500">Sponsor</span>
+                  <span className="font-semibold text-zinc-900">{sponsor?.companyName || "Contender"}</span>
+                </div>
+                <div className="flex justify-between items-center py-0.5 border-b border-zinc-200/60">
+                  <span className="text-zinc-500">Strike Bounty</span>
+                  <span className="font-mono font-semibold text-zinc-900">
+                    ${sponsor?.amountPaid ? Number(sponsor.amountPaid).toFixed(2) : "1.00"} USD
+                  </span>
+                </div>
+                <div className="flex justify-between items-center py-0.5 border-b border-zinc-200/60">
+                  <span className="text-zinc-500">Destination</span>
+                  <a
+                    href={sponsor?.websiteUrl || "#"}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="font-medium text-[#1D9BF0] hover:underline truncate max-w-[200px]"
+                  >
+                    {sponsor?.websiteUrl || "—"}
+                  </a>
+                </div>
+                <div className="flex justify-between items-center pt-0.5">
+                  <span className="text-zinc-500">Live Status</span>
+                  <span className="inline-flex items-center gap-1 text-emerald-700 font-semibold bg-emerald-100/60 px-2 py-0.5 rounded-full text-[11px] border border-emerald-200/60">
+                    <CheckCircle2 className="w-3.5 h-3.5" />
+                    <span>Active Now</span>
+                  </span>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Action Buttons */}
+          <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-2.5">
+            <Link
+              href="/"
+              className="w-full sm:w-auto px-5 py-2.5 bg-zinc-950 hover:bg-black text-white text-xs font-semibold rounded-full shadow-md shadow-zinc-900/10 active:scale-95 transition-all flex items-center justify-center gap-1.5"
+            >
+              <ArrowLeft className="w-3.5 h-3.5" />
+              <span>Back to Arena</span>
+            </Link>
+
+            <a
+              href="https://x.com/iaadi8"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-full sm:w-auto px-5 py-2.5 rounded-full border border-zinc-200 hover:bg-zinc-50 text-zinc-800 text-xs font-semibold transition-colors flex items-center justify-center gap-1.5"
+            >
+              <span>View Profile on 𝕏</span>
+              <ExternalLink className="w-3.5 h-3.5 text-zinc-400" />
+            </a>
+          </div>
+
         </div>
+      </main>
 
-      </div>
+      <Footer />
     </div>
   );
 }
@@ -174,8 +212,8 @@ export default function SuccessPage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen bg-[#F4F4F0] flex items-center justify-center font-mono text-black text-xs font-bold">
-          LOADING VICTORY SCREEN...
+        <div className="min-h-screen bg-[#fafafa] flex items-center justify-center text-xs text-zinc-500">
+          Loading victory confirmation...
         </div>
       }
     >

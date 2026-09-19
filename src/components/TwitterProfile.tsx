@@ -40,14 +40,13 @@ export default function TwitterProfile({
         onClick={handleBannerClick}
         className="relative aspect-[3/1] w-full bg-zinc-100 cursor-pointer overflow-hidden group"
       >
-        <Image
+        <img
           src={activeSponsor?.bannerImageUrl || "/banner.png?v=4"}
-          alt="Twitter Banner"
-          fill
-          unoptimized
-          sizes="(max-width: 768px) 100vw, 672px"
-          priority
-          className="object-cover transition-transform duration-500 group-hover:scale-[1.01]"
+          alt={activeSponsor ? `Banner by ${activeSponsor.companyName}` : "Twitter Banner"}
+          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.01]"
+          onError={(e) => {
+            e.currentTarget.src = "/banner.png?v=4";
+          }}
         />
 
         {/* Subtle Status Pill */}

@@ -17,12 +17,12 @@ export interface CreateCheckoutParams {
   companyName: string;
   email: string;
   amount: number; // in USD
-  durationType: string;
+  durationType?: string;
   returnUrl: string;
 }
 
 export async function createCheckout(params: CreateCheckoutParams): Promise<{ checkoutUrl: string; isMock: boolean }> {
-  const { sponsorId, companyName, email, amount, durationType, returnUrl } = params;
+  const { sponsorId, companyName, email, amount, returnUrl } = params;
 
   // If Dodo Payments is not configured, generate a simulated checkout link
   if (!dodoClient || !isDodoConfigured) {
@@ -51,7 +51,6 @@ export async function createCheckout(params: CreateCheckoutParams): Promise<{ ch
       },
       metadata: {
         sponsorId,
-        durationType,
       },
       return_url: returnUrl,
     });

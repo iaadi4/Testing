@@ -9,116 +9,19 @@ import {
   sanitizeString 
 } from "@/lib/security";
 
+import { getArenaData } from "@/lib/arena";
+
 export async function GET(req: NextRequest) {
   try {
     const recordVisit = req.nextUrl.searchParams.get("record_visit") === "1";
+    const data = await getArenaData(recordVisit);
 
-    let settings = await prisma.siteSetting.findUnique({
-      where: { id: "default" },
-    });
-
-    if (!settings) {
-      settings = await prisma.siteSetting.create({
-        data: {
-          id: "default",
-          defaultBannerUrl: "/banner-moon.png",
-          twitterHandle: "@iaadi8",
-          profileName: "Aditya",
-          profileBio: "SWE Intern | 21 • twitterbanner.lol",
-          profileLocation: "India",
-          profileWebsite: "adityacodes.site",
-          followingCount: 85,
-          followersCount: 109,
-          totalVisits: recordVisit ? 1 : 0,
-          weekPrice: 1.0,
-          monthPrice: 1.0,
-          yearPrice: 1.0,
-          lifetimePrice: 1.0,
-          minOutbidIncrement: 1.0,
-        },
-      });
-    } else if (recordVisit) {
-      settings = await prisma.siteSetting.update({
-        where: { id: "default" },
-        data: {
-          totalVisits: { increment: 1 },
-        },
-      });
-    }
-
-    // Get currently reigning active sponsor
-    let activeSponsor = null;
-    if (settings.activeSponsorId) {
-      activeSponsor = await prisma.sponsor.findUnique({
-        where: { id: settings.activeSponsorId },
-      });
-    }
-
-    if (!activeSponsor) {
-      activeSponsor = await prisma.sponsor.findFirst({
-        where: {
-          status: "ACTIVE",
-        },
-        orderBy: [{ createdAt: "desc" }],
-      });
-    }
-
-    // Determine current price and next price to dethrone
-    const currentPrice = activeSponsor ? activeSponsor.amountPaid : 0;
-    const minBidToDethrone = activeSponsor ? Math.max(1, currentPrice + 1) : 1;
-
-    // Fallen kings / Overthrow history (chronological order)
-    const fallenKings = await prisma.sponsor.findMany({
-      where: {
-        status: { in: ["ACTIVE", "EXPIRED"] },
+    return NextResponse.json(data, {
+      headers: {
+        "Cache-Control": "no-store, no-cache, must-revalidate, max-age=0",
+        Pragma: "no-cache",
       },
-      orderBy: { createdAt: "desc" },
-      take: 50,
     });
-
-    // Hall of fame champions (highest paid)
-    const allTimeChampions = await prisma.sponsor.findMany({
-      where: {
-        status: { in: ["ACTIVE", "EXPIRED"] },
-      },
-      orderBy: [{ amountPaid: "desc" }, { createdAt: "desc" }],
-      take: 20,
-    });
-
-    // Real aggregate metrics
-    const statsAggregate = await prisma.sponsor.aggregate({
-      where: { status: { in: ["ACTIVE", "EXPIRED"] } },
-      _sum: { amountPaid: true, clicksCount: true },
-      _count: { id: true },
-      _max: { amountPaid: true },
-    });
-
-    return NextResponse.json(
-      {
-        settings: {
-          ...settings,
-          adminPassword: undefined,
-        },
-        activeSponsor,
-        currentPrice,
-        minBidToDethrone,
-        fallenKings,
-        allTimeChampions,
-        stats: {
-          totalBounties: statsAggregate._sum.amountPaid || 0,
-          totalBattles: statsAggregate._count.id || 0,
-          totalClicks: statsAggregate._sum.clicksCount || 0,
-          recordBounty: statsAggregate._max.amountPaid || 0,
-          totalVisits: settings.totalVisits || 0,
-        },
-      },
-      {
-        headers: {
-          "Cache-Control": "no-store, no-cache, must-revalidate, max-age=0",
-          Pragma: "no-cache",
-        },
-      }
-    );
   } catch (error: any) {
     console.error("Error fetching arena sponsors:", error);
     return NextResponse.json({ error: "Failed to fetch arena sponsors" }, { status: 500 });
