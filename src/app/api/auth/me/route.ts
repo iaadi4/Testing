@@ -1,10 +1,12 @@
 import { NextResponse } from "next/server";
-import { getSessionUser } from "@/lib/auth";
+import { getSessionUser, SESSION_COOKIE_NAME } from "@/lib/auth";
 
 export async function GET() {
   const user = await getSessionUser();
   if (!user) {
-    return NextResponse.json({ user: null });
+    const res = NextResponse.json({ user: null });
+    res.cookies.delete(SESSION_COOKIE_NAME);
+    return res;
   }
 
   return NextResponse.json({
