@@ -46,9 +46,14 @@ export function Footer() {
           <p className="text-[11px] font-semibold uppercase tracking-wide text-zinc-400 mb-3">
             As featured in
           </p>
-          <a href="https://www.scrolllaunch.com/products/twitter-banner-marketplace?ref=badge" target="_blank" rel="noopener">
-            <img src="https://www.scrolllaunch.com/api/badge/twitter-banner-marketplace" alt="Featured on ScrollLaunch" width="220" height="48" loading="lazy" />
-          </a>
+          <div className="flex flex-wrap items-center gap-4">
+            <a href="https://www.scrolllaunch.com/products/twitter-banner-marketplace?ref=badge" target="_blank" rel="noopener">
+              <img src="https://www.scrolllaunch.com/api/badge/twitter-banner-marketplace" alt="Featured on ScrollLaunch" width="220" height="48" loading="lazy" />
+            </a>
+            <a href="https://buildrship.xyz/products/twitterbanner-lol" target="_blank" rel="noopener noreferrer">
+              <img src="https://buildrship.xyz/assets/featured-on-buildrship.png" alt="Featured on Buildrship" width="130" height="46" />
+            </a>
+          </div>
         </div>
       </div>
     </footer>
