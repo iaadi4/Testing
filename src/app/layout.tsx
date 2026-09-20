@@ -16,26 +16,25 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   metadataBase: new URL("https://www.twitterbanner.lol"),
   title: {
-    default: "twitterbanner.lol — Outbid the Twitter Banner on @iaadi8",
+    default: "twitterbanner.lol — Rent Twitter Banners from Top Creators",
     template: "%s | twitterbanner.lol",
   },
   description:
-    "Inspired by outbid.lol. Starts at $1. Outbid the current sponsor to replace the Twitter banner on @iaadi8 live. Zero algorithms, pure pay-to-rank visibility.",
+    "The two-sided marketplace to rent Twitter/X profile banner real estate from verified high-reach creators. Set your weekly rate, get sponsored, or advertise directly on X.",
   keywords: [
-    "twitterbanner.lol",
-    "outbid.lol",
-    "twitter banner sponsor",
-    "x advertising",
-    "indie hacker sponsor",
-    "pay to dethrone",
-    "twitter banner sponsorship",
+    "twitter banner marketplace",
+    "rent twitter banner",
+    "buy twitter header ad",
+    "monetize twitter profile",
+    "x banner sponsor",
     "sell twitter banner space",
-    "monetize twitter banner",
-    "x profile banner sponsor",
-    "pay to rank leaderboard",
-    "gamified ad space",
-    "king of the hill advertising",
     "bannermrr alternative",
+    "subheaderx alternative",
+    "twitter advertising",
+    "indie hacker sponsorships",
+    "creator monetization",
+    "twitter banner ads",
+    "pay for twitter banner",
   ],
   authors: [{ name: "Aditya (@iaadi8)", url: "https://x.com/iaadi8" }],
   creator: "Aditya (@iaadi8)",
@@ -55,9 +54,9 @@ export const metadata: Metadata = {
     canonical: "/",
   },
   openGraph: {
-    title: "twitterbanner.lol — Outbid the Twitter Banner on @iaadi8",
+    title: "twitterbanner.lol — Rent Twitter Banners from Top Creators",
     description:
-      "Starts at $1. Outbid the current sponsor to replace the Twitter banner on @iaadi8 live. Zero algorithms, pure pay-to-rank visibility.",
+      "Rent verified Twitter/X profile banners for 1 week from high-reach creators. 100% direct visibility with zero algorithmic decay.",
     url: "https://www.twitterbanner.lol",
     siteName: "twitterbanner.lol",
     locale: "en_US",
@@ -67,15 +66,15 @@ export const metadata: Metadata = {
         url: "/og-image.png",
         width: 1200,
         height: 630,
-        alt: "twitterbanner.lol — Outbid the Twitter Banner on @iaadi8",
+        alt: "twitterbanner.lol — The Twitter Banner Marketplace",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "twitterbanner.lol — Outbid the Twitter Banner on @iaadi8",
+    title: "twitterbanner.lol — Rent Twitter Banners from Top Creators",
     description:
-      "Starts at $1. Pay $1 more than the current sponsor to replace the banner on @iaadi8. Inspired by outbid.lol.",
+      "Book 1500×500 Twitter profile banners for 1 week directly from verified creators. Zero algorithmic decay.",
     creator: "@iaadi8",
     site: "@iaadi8",
     images: ["/og-image.png"],
@@ -97,7 +96,7 @@ const jsonLd = {
   name: "twitterbanner.lol",
   url: "https://www.twitterbanner.lol",
   description:
-    "Outbid the current sponsor to replace the Twitter banner on @iaadi8. Inspired by outbid.lol. Zero algorithms, pure pay-to-rank visibility.",
+    "The two-sided marketplace to rent Twitter/X profile banner real estate from verified high-reach creators. Set your weekly rate, get sponsored, or advertise directly on X.",
   author: {
     "@type": "Person",
     name: "Aditya",
@@ -105,8 +104,8 @@ const jsonLd = {
   },
   potentialAction: {
     "@type": "SearchAction",
-    target: "https://www.twitterbanner.lol",
-    "query-input": undefined,
+    target: "https://www.twitterbanner.lol?search={search_term_string}",
+    "query-input": "required name=search_term_string",
   },
 };
 

@@ -391,6 +391,60 @@ export default function MarketplaceView({ creators, stats }: MarketplaceViewProp
         </div>
       </section>
 
+      {/* Frequently Asked Questions */}
+      <section className="bg-white rounded-2xl border border-zinc-200/80 p-6 sm:p-8 space-y-6 shadow-xs">
+        <div className="space-y-1">
+          <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-zinc-900">
+            Frequently Asked Questions
+          </h2>
+          <p className="text-xs sm:text-sm text-zinc-500">
+            Everything you need to know about renting and listing Twitter profile banners.
+          </p>
+        </div>
+
+        <div className="space-y-2.5 pt-2">
+          {[
+            {
+              q: "How does Twitter banner sponsorship work?",
+              a: "Creators connect their Twitter account to verify their follower reach and set a custom rate per week ($/week). Advertisers browse the marketplace, upload their 1500×500 banner, see a real-time live preview of how it looks on the creator's profile, and book 1-week, 2-week, or 4-week slots securely.",
+            },
+            {
+              q: "What dimensions and file formats are required?",
+              a: "Twitter banners must be 1500 pixels wide by 500 pixels high (standard 3:1 aspect ratio). Supported formats are PNG, JPG, and WebP up to 5MB. When you upload, our live preview immediately shows how your graphic will appear on the creator's profile card.",
+            },
+            {
+              q: "How do creators get verified and receive payouts?",
+              a: "Creators sign in via Twitter OAuth 2.0 PKCE, which directly pulls verified follower metrics, display names, and avatars from the Twitter API. Creators control their weekly rates in their dashboard and can add payout instructions (PayPal, bank transfer, or crypto).",
+            },
+            {
+              q: "Can advertisers track clicks and traffic?",
+              a: "Yes! Every active sponsorship includes built-in click tracking via custom redirect links. Advertisers and creators can view real-time click counts and analytics.",
+            },
+            {
+              q: "How is this different from BannerMRR or outbid.lol?",
+              a: "Unlike BannerMRR which requires expensive 30-day subscriptions, twitterbanner.lol offers flexible 1-week slots with interactive live ad previews before checkout. And unlike directory meme sites (outbid clones), your banner is placed directly on high-reach Twitter profiles with real, permanent daily impressions.",
+            },
+            {
+              q: "What types of products or brands can sponsor a banner?",
+              a: "Tech startups, AI tools, SaaS products, developer devtools, newsletters, crypto/Web3 projects, and indie creators are all great fits. Abusive, explicit, or misleading content is strictly prohibited and moderated.",
+            },
+          ].map((item, i) => (
+            <details
+              key={i}
+              className="group rounded-xl bg-zinc-50/70 border border-zinc-200/60 overflow-hidden"
+            >
+              <summary className="cursor-pointer px-4 py-3 text-xs sm:text-sm font-semibold text-zinc-900 flex items-center justify-between hover:bg-zinc-100/60 transition-colors">
+                <span>{item.q}</span>
+                <span className="text-zinc-400 group-open:rotate-45 transition-transform text-lg leading-none font-normal">+</span>
+              </summary>
+              <p className="px-4 pb-3.5 text-xs text-zinc-600 leading-relaxed">
+                {item.a}
+              </p>
+            </details>
+          ))}
+        </div>
+      </section>
+
     </div>
   );
 }

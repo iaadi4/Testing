@@ -36,6 +36,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: "monthly",
       priority: 0.7,
     },
+    {
+      url: `${baseUrl}/blog/bannermrr-vs-twitterbanner`,
+      lastModified: new Date("2026-09-20"),
+      changeFrequency: "monthly",
+      priority: 0.7,
+    },
   ];
 
   // Dynamic creator storefronts
