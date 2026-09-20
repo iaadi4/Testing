@@ -3,6 +3,7 @@
 import React from "react";
 import Image from "next/image";
 import { BannerSoldCountdown } from "@/components/BannerSoldCountdown";
+import { BannerSlotPlaceholder } from "@/components/BannerSlotPlaceholder";
 import { 
   MapPin, 
   Link as LinkIcon, 
@@ -42,12 +43,16 @@ export default function TwitterProfile({
   onRentClick,
   showRentButton = true,
 }: TwitterProfileProps) {
-  const currentBanner =
+  const hasCustomDefault = Boolean(
+    creator.defaultBannerUrl && creator.defaultBannerUrl !== "/banner.png"
+  );
+  const realBanner =
     previewBannerUrl ||
     activeSponsorship?.bannerSrc ||
     activeSponsorship?.bannerImageUrl ||
-    creator.defaultBannerUrl ||
-    "/banner.png";
+    (hasCustomDefault ? creator.defaultBannerUrl : null);
+  const showSlotPlaceholder = !realBanner;
+  const currentBanner = realBanner || "/banner.png";
   const isRemoteBanner = currentBanner.startsWith("http") || currentBanner.startsWith("/");
 
   const handleBannerClick = () => {
@@ -66,7 +71,9 @@ export default function TwitterProfile({
         onClick={handleBannerClick}
         className="relative aspect-[3/1] w-full bg-zinc-100 cursor-pointer overflow-hidden group"
       >
-        {isRemoteBanner ? (
+        {showSlotPlaceholder ? (
+          <BannerSlotPlaceholder weeklyPrice={creator.weeklyPrice} />
+        ) : isRemoteBanner ? (
           <Image
             src={currentBanner}
             alt={activeSponsorship ? `Banner by ${activeSponsorship.brandName}` : `${creator.name}'s Twitter Banner`}
@@ -100,7 +107,7 @@ export default function TwitterProfile({
                 </div>
               )}
             </div>
-          ) : (
+          ) : showSlotPlaceholder ? null : (
             <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-black/60 hover:bg-black/80 text-white text-xs font-medium backdrop-blur-md transition-colors border border-white/10 shadow-sm">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
               <span>Available for ${creator.weeklyPrice || 49}/week</span>

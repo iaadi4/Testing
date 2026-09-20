@@ -18,6 +18,7 @@ import {
   ShieldCheck
 } from "lucide-react";
 import { BannerSoldCountdown } from "@/components/BannerSoldCountdown";
+import { BannerSlotPlaceholder } from "@/components/BannerSlotPlaceholder";
 
 interface Creator {
   id: string;
@@ -241,6 +242,11 @@ export default function MarketplaceView({
                 (creator as { bannerSrc?: string }).bannerSrc ||
                 creator.defaultBannerUrl ||
                 "/banner.png";
+              const showSlotPlaceholder =
+                !activeSponsorship &&
+                (!creator.defaultBannerUrl ||
+                  creator.defaultBannerUrl === "/banner.png") &&
+                (bannerSrc === "/banner.png" || !bannerSrc);
 
               return (
                 <div
@@ -250,15 +256,19 @@ export default function MarketplaceView({
                   <div>
                     {/* Banner Thumbnail (3:1) */}
                     <div className="relative aspect-[3/1] w-full bg-zinc-100 overflow-hidden">
-                      <Image
-                        src={bannerSrc}
-                        alt={`${creator.name}'s banner`}
-                        fill
-                        priority={index < 3}
-                        loading={index < 3 ? "eager" : "lazy"}
-                        sizes="(max-width: 768px) 100vw, 50vw"
-                        className="object-cover group-hover:scale-[1.02] transition-transform duration-500"
-                      />
+                      {showSlotPlaceholder ? (
+                        <BannerSlotPlaceholder compact weeklyPrice={creator.weeklyPrice} />
+                      ) : (
+                        <Image
+                          src={bannerSrc}
+                          alt={`${creator.name}'s banner`}
+                          fill
+                          priority={index < 3}
+                          loading={index < 3 ? "eager" : "lazy"}
+                          sizes="(max-width: 768px) 100vw, 50vw"
+                          className="object-cover group-hover:scale-[1.02] transition-transform duration-500"
+                        />
+                      )}
 
                       {/* Status Tag */}
                       <div className="absolute top-2.5 right-2.5">
