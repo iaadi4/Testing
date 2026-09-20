@@ -2,6 +2,7 @@
 
 import React from "react";
 import Image from "next/image";
+import { BannerSoldCountdown } from "@/components/BannerSoldCountdown";
 import { 
   MapPin, 
   Link as LinkIcon, 
@@ -89,9 +90,15 @@ export default function TwitterProfile({
               <span>Previewing Your Banner</span>
             </div>
           ) : activeSponsorship ? (
-            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-black/80 hover:bg-black text-white text-xs font-medium backdrop-blur-md transition-colors border border-white/10 shadow-sm">
-              <span>Sponsored by {activeSponsorship.brandName}</span>
-              <ArrowUpRight className="w-3.5 h-3.5 text-zinc-300" />
+            <div className="flex flex-col items-end gap-1">
+              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-rose-600 text-white text-xs font-semibold backdrop-blur-md shadow-sm">
+                <span>Sold · {activeSponsorship.brandName}</span>
+              </div>
+              {activeSponsorship.endDate && (
+                <div className="px-2.5 py-1 rounded-full bg-black/75 text-white text-[10px] font-medium backdrop-blur-md border border-white/10">
+                  <BannerSoldCountdown endDate={activeSponsorship.endDate} prefix="Available in" />
+                </div>
+              )}
             </div>
           ) : (
             <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-black/60 hover:bg-black/80 text-white text-xs font-medium backdrop-blur-md transition-colors border border-white/10 shadow-sm">

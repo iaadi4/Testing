@@ -83,6 +83,8 @@ export async function getMarketplaceData(options: GetMarketplaceOptions = {}) {
               id: true,
               brandName: true,
               brandUrl: true,
+              endDate: true,
+              startDate: true,
             },
           },
         },
@@ -124,6 +126,8 @@ export async function getMarketplaceData(options: GetMarketplaceOptions = {}) {
               id: active.id,
               brandName: active.brandName,
               brandUrl: active.brandUrl,
+              endDate: active.endDate,
+              startDate: active.startDate,
               hasBanner: true,
             }
           : null,

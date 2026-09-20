@@ -14,6 +14,7 @@ import {
   ArrowUpRight 
 } from "lucide-react";
 import TwitterProfile, { CreatorProfileData } from "@/components/TwitterProfile";
+import { BannerSoldCountdown } from "@/components/BannerSoldCountdown";
 import { compressBannerFile } from "@/lib/compressBanner";
 
 interface CreatorBookingViewProps {
@@ -44,6 +45,7 @@ export default function CreatorBookingView({
 
   const weeklyPrice = creator.weeklyPrice || 49;
   const totalPrice = weeklyPrice * durationWeeks;
+  const isSold = Boolean(activeSponsorship?.endDate && new Date(activeSponsorship.endDate) >= new Date());
 
   const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -157,14 +159,23 @@ export default function CreatorBookingView({
           activeSponsorship={activeSponsorship}
           previewBannerUrl={bannerPreview}
           onRentClick={handleScrollToForm}
-          showRentButton={!bannerPreview}
+          showRentButton={!bannerPreview && !isSold}
         />
       </section>
+
+      {isSold && activeSponsorship?.endDate && (
+        <div className="p-4 rounded-xl bg-rose-50 border border-rose-200 text-sm text-rose-900">
+          <p className="font-bold">This banner is sold for the current week.</p>
+          <p className="mt-1 text-xs text-rose-800">
+            <BannerSoldCountdown endDate={activeSponsorship.endDate} prefix="New bookings open in" />
+          </p>
+        </div>
+      )}
 
       {/* Booking Form Card */}
       <section
         ref={bookingFormRef}
-        className="bg-white rounded-2xl border border-zinc-200/80 shadow-xs p-6 sm:p-8 space-y-6"
+        className={`bg-white rounded-2xl border border-zinc-200/80 shadow-xs p-6 sm:p-8 space-y-6 ${isSold ? "opacity-60 pointer-events-none" : ""}`}
       >
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-zinc-100">
           <div>

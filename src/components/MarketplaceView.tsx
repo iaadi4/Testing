@@ -17,6 +17,7 @@ import {
   TrendingUp,
   ShieldCheck
 } from "lucide-react";
+import { BannerSoldCountdown } from "@/components/BannerSoldCountdown";
 
 interface Creator {
   id: string;
@@ -262,8 +263,8 @@ export default function MarketplaceView({
                       {/* Status Tag */}
                       <div className="absolute top-2.5 right-2.5">
                         {activeSponsorship ? (
-                          <span className="px-2.5 py-1 rounded-full bg-black/80 text-white text-[10px] font-semibold backdrop-blur-sm border border-white/10">
-                            Booked
+                          <span className="px-2.5 py-1 rounded-full bg-rose-600 text-white text-[10px] font-semibold backdrop-blur-sm shadow-xs">
+                            Sold
                           </span>
                         ) : (
                           <span className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-600 text-white text-[10px] font-semibold backdrop-blur-sm shadow-xs">
@@ -323,23 +324,42 @@ export default function MarketplaceView({
                           {creator.bio}
                         </p>
                       )}
+                      {activeSponsorship?.endDate && (
+                        <p className="text-[11px] font-medium text-rose-700">
+                          <BannerSoldCountdown endDate={activeSponsorship.endDate} prefix="Available in" />
+                        </p>
+                      )}
                     </div>
                   </div>
 
                   {/* Card Footer / Rent Action */}
                   <div className="px-4 sm:px-5 py-3 bg-zinc-50/60 border-t border-zinc-100 flex items-center justify-between">
                     <div>
-                      <div className="text-xs text-zinc-400 font-medium">Weekly Rate</div>
-                      <div className="text-sm font-bold text-zinc-900">
-                        ${creator.weeklyPrice.toFixed(0)} <span className="text-[11px] font-normal text-zinc-500">/ week</span>
-                      </div>
+                      {activeSponsorship ? (
+                        <>
+                          <div className="text-xs text-zinc-400 font-medium">Status</div>
+                          <div className="text-sm font-bold text-rose-700">Sold this week</div>
+                        </>
+                      ) : (
+                        <>
+                          <div className="text-xs text-zinc-400 font-medium">Weekly Rate</div>
+                          <div className="text-sm font-bold text-zinc-900">
+                            ${creator.weeklyPrice.toFixed(0)}{" "}
+                            <span className="text-[11px] font-normal text-zinc-500">/ week</span>
+                          </div>
+                        </>
+                      )}
                     </div>
 
                     <Link
                       href={`/${creator.username}`}
-                      className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-zinc-900 hover:bg-zinc-800 text-white text-xs font-semibold transition-colors shadow-2xs"
+                      className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-colors shadow-2xs ${
+                        activeSponsorship
+                          ? "bg-zinc-100 text-zinc-600 hover:bg-zinc-200"
+                          : "bg-zinc-900 hover:bg-zinc-800 text-white"
+                      }`}
                     >
-                      <span>Rent Banner</span>
+                      <span>{activeSponsorship ? "View storefront" : "Rent Banner"}</span>
                       <ArrowUpRight className="w-3.5 h-3.5 text-zinc-300" />
                     </Link>
                   </div>
