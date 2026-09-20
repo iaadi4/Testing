@@ -1,65 +1,78 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { dodoClient, isDodoConfigured } from "@/lib/dodopayments";
-import { activateSponsor } from "@/lib/sponsorActivation";
 
 export async function POST(req: NextRequest) {
   try {
-    const { orderId } = await req.json();
+    const { sponsorshipId } = await req.json();
 
-    if (!orderId || typeof orderId !== "string") {
-      return NextResponse.json({ error: "Missing orderId" }, { status: 400 });
+    if (!sponsorshipId) {
+      return NextResponse.json({ error: "Missing sponsorshipId" }, { status: 400 });
     }
 
-    const sponsor = await prisma.sponsor.findUnique({
-      where: { id: orderId },
+    const sponsorship = await prisma.sponsorship.findUnique({
+      where: { id: sponsorshipId },
+      include: { creator: true },
     });
 
-    if (!sponsor) {
-      return NextResponse.json({ error: "Sponsor not found" }, { status: 404 });
+    if (!sponsorship) {
+      return NextResponse.json({ error: "Sponsorship not found" }, { status: 404 });
     }
 
-    if (sponsor.status === "ACTIVE") {
-      return NextResponse.json({ success: true, sponsor, isAlreadyActive: true });
+    // If already active, return immediately
+    if (sponsorship.status === "ACTIVE") {
+      return NextResponse.json({
+        success: true,
+        status: "ACTIVE",
+        sponsorship,
+      });
     }
 
-    // Check if Dodo Payments is configured in live mode
-    const isLive = process.env.DODO_PAYMENTS_ENVIRONMENT === "live_mode" && isDodoConfigured;
+    // In dev / test / mock mode, auto-activate
+    const isTestMode =
+      process.env.NODE_ENV !== "production" ||
+      !isDodoConfigured ||
+      process.env.DODO_PAYMENTS_ENVIRONMENT === "test_mode";
 
-    if (isLive && dodoClient) {
-      try {
-        // Query recent successful payments from Dodo
-        const paymentsList = await dodoClient.payments.list({
-          status: "succeeded",
-          page_size: 10,
-        });
+    if (isTestMode) {
+      const startDate = new Date();
+      const durationWeeks = sponsorship.durationWeeks || 1;
+      const endDate = new Date(startDate.getTime() + durationWeeks * 7 * 24 * 60 * 60 * 1000);
 
-        // Check if there is a successful payment matching sponsorId or email
-        const matchedPayment = paymentsList.items?.find((p: any) => {
-          return (
-            p.metadata?.sponsorId === sponsor.id ||
-            p.metadata?.orderId === sponsor.id ||
-            p.customer?.email?.toLowerCase() === sponsor.email.toLowerCase()
-          );
-        });
+      await prisma.sponsorship.updateMany({
+        where: {
+          creatorId: sponsorship.creatorId,
+          status: "ACTIVE",
+          id: { not: sponsorship.id },
+        },
+        data: { status: "COMPLETED" },
+      });
 
-        if (matchedPayment) {
-          const activated = await activateSponsor(sponsor.id, matchedPayment.payment_id);
-          return NextResponse.json({ success: true, sponsor: activated, verifiedByApi: true });
-        }
-      } catch (dodoErr) {
-        console.error("Dodo payment verification check error:", dodoErr);
-      }
+      const updated = await prisma.sponsorship.update({
+        where: { id: sponsorship.id },
+        data: {
+          status: "ACTIVE",
+          startDate,
+          endDate,
+          dodoPaymentId: `sim_${Date.now()}`,
+        },
+        include: { creator: true },
+      });
 
-      // If webhook has not delivered yet and API check hasn't confirmed, report pending
-      return NextResponse.json({ success: false, status: sponsor.status, sponsor });
+      return NextResponse.json({
+        success: true,
+        status: "ACTIVE",
+        sponsorship: updated,
+      });
     }
 
-    // If sandbox / test mode or mock, activate immediately
-    const activated = await activateSponsor(sponsor.id, `sim_${sponsor.id.slice(-8)}`);
-    return NextResponse.json({ success: true, sponsor: activated });
+    return NextResponse.json({
+      success: false,
+      status: sponsorship.status,
+      message: "Payment still pending webhook verification",
+    });
   } catch (error: any) {
-    console.error("Error verifying sponsor order:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    console.error("Verification error:", error);
+    return NextResponse.json({ error: error.message || "Verification failed" }, { status: 500 });
   }
 }

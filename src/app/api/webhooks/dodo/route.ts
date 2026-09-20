@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { dodoClient } from "@/lib/dodopayments";
-import { activateSponsor } from "@/lib/sponsorActivation";
 
 export async function POST(req: NextRequest) {
   try {
@@ -27,13 +26,11 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: "Invalid webhook signature" }, { status: 401 });
       }
     } else {
-      // In production, reject if secret is missing
       if (isProduction) {
         console.error("DODO_WEBHOOK_SECRET is not configured in production. Rejecting unverified webhook.");
         return NextResponse.json({ error: "Webhook secret not configured" }, { status: 500 });
       }
 
-      // Local development fallback
       try {
         event = JSON.parse(rawBody);
       } catch {
@@ -46,47 +43,64 @@ export async function POST(req: NextRequest) {
     if (eventType === "payment.succeeded" || eventType === "payment_intent.succeeded") {
       const paymentData = event.data || event;
       const metadata = paymentData.metadata || {};
-      const sponsorId =
+      const sponsorshipId =
+        metadata.sponsorshipId ||
+        metadata.sponsorship_id ||
         metadata.sponsorId ||
-        metadata.sponsor_id ||
-        metadata.orderId ||
-        metadata.order_id ||
-        metadata.id;
+        metadata.orderId;
       const paymentId = paymentData.payment_id || paymentData.id || event.id;
 
-      let sponsor = null;
-      if (sponsorId && typeof sponsorId === "string") {
-        sponsor = await prisma.sponsor.findUnique({
-          where: { id: sponsorId },
+      let sponsorship = null;
+      if (sponsorshipId && typeof sponsorshipId === "string") {
+        sponsorship = await prisma.sponsorship.findUnique({
+          where: { id: sponsorshipId },
         });
       }
 
-      // Fallback: If sponsorId is not in metadata, look up the most recent PENDING sponsor by customer email
-      if (!sponsor && paymentData.customer?.email) {
-        sponsor = await prisma.sponsor.findFirst({
+      // Fallback matching by email if metadata was lost
+      if (!sponsorship && paymentData.customer?.email) {
+        sponsorship = await prisma.sponsorship.findFirst({
           where: {
-            email: String(paymentData.customer.email).trim().toLowerCase(),
+            buyerEmail: paymentData.customer.email.toLowerCase(),
             status: "PENDING",
           },
           orderBy: { createdAt: "desc" },
         });
       }
 
-      if (!sponsor) {
-        console.warn("Dodo webhook: No matching pending sponsor found for payload:", paymentData);
-        return NextResponse.json({ received: true, warning: "Sponsor not found" }, { status: 200 });
+      if (sponsorship) {
+        const startDate = new Date();
+        const durationWeeks = sponsorship.durationWeeks || 1;
+        const endDate = new Date(startDate.getTime() + durationWeeks * 7 * 24 * 60 * 60 * 1000);
+
+        // Mark any prior active sponsorship for this creator as COMPLETED
+        await prisma.sponsorship.updateMany({
+          where: {
+            creatorId: sponsorship.creatorId,
+            status: "ACTIVE",
+            id: { not: sponsorship.id },
+          },
+          data: { status: "COMPLETED" },
+        });
+
+        // Activate new sponsorship
+        await prisma.sponsorship.update({
+          where: { id: sponsorship.id },
+          data: {
+            status: "ACTIVE",
+            startDate,
+            endDate,
+            dodoPaymentId: paymentId ? String(paymentId) : undefined,
+          },
+        });
+
+        console.log(`[WEBHOOK] Successfully activated sponsorship ${sponsorship.id} for creator ${sponsorship.creatorId}`);
       }
-
-      // Activate sponsor and dethrone previous king
-      const activated = await activateSponsor(sponsor.id, paymentId);
-      console.log(`Dodo webhook: Sponsor ${sponsor.id} (${sponsor.companyName}) activated successfully!`);
-
-      return NextResponse.json({ received: true, activated: Boolean(activated) }, { status: 200 });
     }
 
-    return NextResponse.json({ received: true }, { status: 200 });
+    return NextResponse.json({ received: true });
   } catch (error: any) {
-    console.error("Dodo webhook processing error:", error);
-    return NextResponse.json({ error: "Internal error" }, { status: 500 });
+    console.error("Webhook processing error:", error);
+    return NextResponse.json({ error: error.message || "Webhook error" }, { status: 500 });
   }
 }

@@ -13,20 +13,21 @@ export const dodoClient = isDodoConfigured
   : null;
 
 export interface CreateCheckoutParams {
-  sponsorId: string;
-  companyName: string;
-  email: string;
+  sponsorshipId: string;
+  creatorId: string;
+  buyerName: string;
+  buyerEmail: string;
   amount: number; // in USD
-  durationType?: string;
+  durationWeeks: number;
   returnUrl: string;
 }
 
 export async function createCheckout(params: CreateCheckoutParams): Promise<{ checkoutUrl: string; isMock: boolean }> {
-  const { sponsorId, companyName, email, amount, returnUrl } = params;
+  const { sponsorshipId, creatorId, buyerName, buyerEmail, amount, durationWeeks, returnUrl } = params;
 
   // If Dodo Payments is not configured, generate a simulated checkout link
   if (!dodoClient || !isDodoConfigured) {
-    const mockUrl = `${returnUrl}&mock=true&token=sim_${sponsorId.slice(-8)}`;
+    const mockUrl = `${returnUrl}&mock=true&token=sim_${sponsorshipId.slice(-8)}`;
     return {
       checkoutUrl: mockUrl,
       isMock: true,
@@ -46,11 +47,13 @@ export async function createCheckout(params: CreateCheckoutParams): Promise<{ ch
         },
       ],
       customer: {
-        email: email,
-        name: companyName,
+        email: buyerEmail,
+        name: buyerName,
       },
       metadata: {
-        sponsorId,
+        sponsorshipId,
+        creatorId,
+        durationWeeks: String(durationWeeks),
       },
       return_url: returnUrl,
     });

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import { timingSafeCompare, checkRateLimit, getClientIp, sanitizeString } from "@/lib/security";
+import { timingSafeCompare, checkRateLimit, getClientIp } from "@/lib/security";
 
 export async function POST(req: NextRequest) {
   try {
@@ -33,73 +33,82 @@ export async function POST(req: NextRequest) {
 
     switch (action) {
       case "getData": {
-        const allSponsors = await prisma.sponsor.findMany({
+        const creators = await prisma.user.findMany({
           orderBy: { createdAt: "desc" },
+          include: {
+            _count: {
+              select: { sponsorships: true },
+            },
+          },
         });
+
+        const sponsorships = await prisma.sponsorship.findMany({
+          orderBy: { createdAt: "desc" },
+          include: {
+            creator: {
+              select: { username: true, name: true },
+            },
+          },
+        });
+
+        const totalGmv = sponsorships
+          .filter((s) => s.status === "ACTIVE" || s.status === "COMPLETED")
+          .reduce((acc, s) => acc + (s.amountPaid || 0), 0);
+
         return NextResponse.json({
           settings: {
             ...settings,
-            adminPassword: undefined, // Never leak hash/password
-          },
-          sponsors: allSponsors,
-        });
-      }
-
-      case "updateSettings": {
-        const updated = await prisma.siteSetting.update({
-          where: { id: "default" },
-          data: {
-            profileName: data.profileName ? sanitizeString(data.profileName, 50) : settings?.profileName,
-            twitterHandle: data.twitterHandle ? sanitizeString(data.twitterHandle, 30) : settings?.twitterHandle,
-            profileBio: data.profileBio ? sanitizeString(data.profileBio, 200) : settings?.profileBio,
-            profileLocation: data.profileLocation ? sanitizeString(data.profileLocation, 50) : settings?.profileLocation,
-            profileWebsite: data.profileWebsite ? sanitizeString(data.profileWebsite, 100) : settings?.profileWebsite,
-            followersCount: data.followersCount !== undefined ? Math.max(0, Number(data.followersCount)) : settings?.followersCount,
-            followingCount: data.followingCount !== undefined ? Math.max(0, Number(data.followingCount)) : settings?.followingCount,
-            minOutbidIncrement: data.minOutbidIncrement !== undefined ? Math.max(1, Number(data.minOutbidIncrement)) : settings?.minOutbidIncrement,
-            defaultBannerUrl: data.defaultBannerUrl ? sanitizeString(data.defaultBannerUrl, 500) : settings?.defaultBannerUrl,
-          },
-        });
-        return NextResponse.json({
-          success: true,
-          settings: {
-            ...updated,
             adminPassword: undefined,
           },
+          creators,
+          sponsorships,
+          metrics: {
+            totalCreators: creators.length,
+            totalBookings: sponsorships.length,
+            totalGmv,
+          },
         });
       }
 
-      case "setActiveSponsor": {
-        const { sponsorId } = data;
-        await prisma.siteSetting.update({
-          where: { id: "default" },
-          data: { activeSponsorId: sponsorId || null },
+      case "toggleCreatorActive": {
+        const { creatorId, isListingActive } = data;
+        const updated = await prisma.user.update({
+          where: { id: creatorId },
+          data: { isListingActive: Boolean(isListingActive) },
         });
-        if (sponsorId) {
-          await prisma.sponsor.update({
-            where: { id: sponsorId },
-            data: { status: "ACTIVE" },
-          });
-        }
-        return NextResponse.json({ success: true });
+        return NextResponse.json({ success: true, creator: updated });
       }
 
-      case "updateSponsorStatus": {
-        const { sponsorId, status } = data;
-        if (!["ACTIVE", "QUEUED", "EXPIRED", "PENDING"].includes(status)) {
+      case "updateCreator": {
+        const { creatorId, weeklyPrice, category, isVerified } = data;
+        const updateData: any = {};
+        if (weeklyPrice !== undefined) updateData.weeklyPrice = Number(weeklyPrice);
+        if (category !== undefined) updateData.category = String(category);
+        if (isVerified !== undefined) updateData.isVerified = Boolean(isVerified);
+
+        const updated = await prisma.user.update({
+          where: { id: creatorId },
+          data: updateData,
+        });
+        return NextResponse.json({ success: true, creator: updated });
+      }
+
+      case "updateSponsorshipStatus": {
+        const { sponsorshipId, status } = data;
+        if (!["ACTIVE", "PENDING", "COMPLETED", "CANCELLED"].includes(status)) {
           return NextResponse.json({ error: "Invalid status" }, { status: 400 });
         }
-        const updated = await prisma.sponsor.update({
-          where: { id: sponsorId },
+        const updated = await prisma.sponsorship.update({
+          where: { id: sponsorshipId },
           data: { status },
         });
-        return NextResponse.json({ success: true, sponsor: updated });
+        return NextResponse.json({ success: true, sponsorship: updated });
       }
 
-      case "deleteSponsor": {
-        const { sponsorId } = data;
-        await prisma.sponsor.delete({
-          where: { id: sponsorId },
+      case "deleteSponsorship": {
+        const { sponsorshipId } = data;
+        await prisma.sponsorship.delete({
+          where: { id: sponsorshipId },
         });
         return NextResponse.json({ success: true });
       }
@@ -109,6 +118,6 @@ export async function POST(req: NextRequest) {
     }
   } catch (error: any) {
     console.error("Admin API error:", error);
-    return NextResponse.json({ error: "Operation failed" }, { status: 500 });
+    return NextResponse.json({ error: error.message || "Operation failed" }, { status: 500 });
   }
 }

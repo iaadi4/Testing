@@ -1,67 +1,30 @@
-import { getArenaData } from "@/lib/arena";
-import HomeClient from "@/components/HomeClient";
+import React from "react";
+import { Metadata } from "next";
+import { getMarketplaceData } from "@/lib/marketplace";
+import MarketplaceView from "@/components/MarketplaceView";
+import { Navbar } from "@/components/Navbar";
+import { Footer } from "@/components/Footer";
 
 export const dynamic = "force-dynamic";
 
-const faqJsonLd = {
-  "@context": "https://schema.org",
-  "@type": "FAQPage",
-  mainEntity: [
-    {
-      "@type": "Question",
-      name: "What is twitterbanner.lol?",
-      acceptedAnswer: {
-        "@type": "Answer",
-        text: "twitterbanner.lol is a pay-to-dethrone Twitter banner sponsorship platform inspired by outbid.lol. Anyone can pay to replace the current banner on @iaadi8\u2019s Twitter/X profile. The concept is simple: outbid the current king to take the throne.",
-      },
-    },
-    {
-      "@type": "Question",
-      name: "How much does it cost to sponsor the banner?",
-      acceptedAnswer: {
-        "@type": "Answer",
-        text: "It starts at just $1. To dethrone the current sponsor, you pay $1 more than what they paid. There are no hidden fees, no subscriptions, and no algorithms — just pure pay-to-rank visibility.",
-      },
-    },
-    {
-      "@type": "Question",
-      name: "What happens when someone outbids me?",
-      acceptedAnswer: {
-        "@type": "Answer",
-        text: "Your banner gets replaced by the new sponsor\u2019s banner immediately. You join the \u201CFallen Kings\u201D hall of fame showing your reign duration and the amount you paid. Your brand still gets visibility in the bid history.",
-      },
-    },
-    {
-      "@type": "Question",
-      name: "How is this different from outbid.lol?",
-      acceptedAnswer: {
-        "@type": "Answer",
-        text: "outbid.lol is a pay-to-rank leaderboard directory. twitterbanner.lol takes that same competitive mechanic but anchors it to real social media real estate — a Twitter profile banner that gets organic daily impressions from every profile visitor.",
-      },
-    },
-    {
-      "@type": "Question",
-      name: "Who sees my banner?",
-      acceptedAnswer: {
-        "@type": "Answer",
-        text: "Everyone who visits @iaadi8\u2019s Twitter/X profile sees the current sponsor\u2019s banner. This includes organic visitors from tweets, replies, and retweets. It\u2019s direct, algorithmic-free visibility for your brand.",
-      },
-    },
-  ],
+export const metadata: Metadata = {
+  title: "Twitter Banner Marketplace — Rent Header Space from Top Creators",
+  description:
+    "Rent verified Twitter/X profile banner real estate for 1 week from high-reach creators. 100% direct visibility with zero algorithmic decay.",
 };
 
 export default async function HomePage() {
-  const initialData = await getArenaData(false);
+  const { creators, stats } = await getMarketplaceData();
 
   return (
-    <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify(faqJsonLd).replace(/</g, "\\u003c"),
-        }}
-      />
-      <HomeClient initialData={initialData} />
-    </>
+    <div className="min-h-screen bg-[#fafafa] bg-[radial-gradient(#e5e7eb_1.2px,transparent_1.2px)] [background-size:20px_20px] text-zinc-900 flex flex-col font-sans selection:bg-zinc-900 selection:text-white">
+      <Navbar />
+
+      <main className="flex-1 max-w-5xl mx-auto w-full px-4 sm:px-6 py-6 sm:py-10">
+        <MarketplaceView creators={creators} stats={stats} />
+      </main>
+
+      <Footer />
+    </div>
   );
 }

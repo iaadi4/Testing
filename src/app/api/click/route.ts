@@ -4,33 +4,33 @@ import { isValidHttpUrl, checkRateLimit, getClientIp } from "@/lib/security";
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
-  const sponsorId = searchParams.get("id");
+  const sponsorshipId = searchParams.get("id");
 
-  if (!sponsorId) {
+  if (!sponsorshipId) {
     return NextResponse.redirect(new URL("/", req.url));
   }
 
   try {
-    const sponsor = await prisma.sponsor.findUnique({
-      where: { id: sponsorId },
+    const sponsorship = await prisma.sponsorship.findUnique({
+      where: { id: sponsorshipId },
     });
 
-    if (!sponsor || !isValidHttpUrl(sponsor.websiteUrl)) {
+    if (!sponsorship || !isValidHttpUrl(sponsorship.brandUrl)) {
       return NextResponse.redirect(new URL("/", req.url));
     }
 
-    // Rate-limit click counting: only count 1 click per IP per sponsor every 30 seconds
+    // Rate-limit click counting: only count 1 click per IP per sponsorship every 30 seconds
     const ip = getClientIp(req);
-    const clickLimit = checkRateLimit(`click_${sponsorId}_${ip}`, 1, 30 * 1000);
+    const clickLimit = checkRateLimit(`click_${sponsorshipId}_${ip}`, 1, 30 * 1000);
 
     if (clickLimit.allowed) {
-      await prisma.sponsor.update({
-        where: { id: sponsorId },
+      await prisma.sponsorship.update({
+        where: { id: sponsorshipId },
         data: { clicksCount: { increment: 1 } },
       });
     }
 
-    return NextResponse.redirect(sponsor.websiteUrl);
+    return NextResponse.redirect(sponsorship.brandUrl);
   } catch (error) {
     console.error("Click redirect error:", error);
     return NextResponse.redirect(new URL("/", req.url));

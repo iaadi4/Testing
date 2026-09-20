@@ -2,52 +2,55 @@
 
 import React from "react";
 import Link from "next/link";
-import { ExternalLink } from "lucide-react";
+import { ExternalLink, Sparkles } from "lucide-react";
 
 export function Footer() {
   return (
-    <footer className="border-t border-zinc-200/80 bg-white py-6 text-zinc-500 text-xs mt-12">
-      <div className="max-w-2xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-3">
-        <div className="flex items-center gap-2">
-          <span className="font-semibold text-zinc-900">twitterbanner.lol</span>
-          <span>•</span>
-          <span>
-            by{" "}
-            <a
-              href="https://x.com/iaadi8"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-zinc-900 hover:underline font-medium"
-            >
-              @iaadi8
-            </a>
-          </span>
-          <span>•</span>
-          <Link
-            href="/blog/outbid-lol-phenomenon"
-            className="text-zinc-500 hover:text-zinc-900 hover:underline"
-          >
-            inspired by outbid.lol
-          </Link>
+    <footer className="border-t border-zinc-200/80 bg-white py-10 text-zinc-500 text-xs mt-16">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 flex flex-col md:flex-row items-center justify-between gap-6">
+        
+        {/* Brand & Mission */}
+        <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-3 text-center sm:text-left">
+          <div className="flex items-center gap-2 font-semibold text-zinc-900">
+            <span className="w-2 h-2 rounded-full bg-emerald-500" />
+            <span>twitterbanner.lol</span>
+          </div>
+          <span className="hidden sm:inline">•</span>
+          <span>The marketplace for Twitter/X profile banner sponsorships</span>
         </div>
 
-        <div className="flex items-center gap-4 text-zinc-500">
-          <Link
-            href="/blog"
-            className="hover:text-zinc-900 transition-colors font-medium"
-          >
+        {/* Links */}
+        <div className="flex flex-wrap items-center justify-center gap-5 text-zinc-600 font-medium">
+          <Link href="/" className="hover:text-zinc-900 transition-colors">
+            Marketplace
+          </Link>
+          <Link href="/blog" className="hover:text-zinc-900 transition-colors">
             Blog
           </Link>
           <a
-            href="https://adityacodes.site"
+            href="/api/auth/twitter/login"
+            className="hover:text-zinc-900 transition-colors flex items-center gap-1 text-zinc-900"
+          >
+            <Sparkles className="w-3 h-3 text-amber-500" />
+            <span>List Banner</span>
+          </a>
+          <a
+            href="https://x.com/iaadi8"
             target="_blank"
             rel="noopener noreferrer"
             className="hover:text-zinc-900 transition-colors flex items-center gap-0.5"
           >
-            <span>adityacodes.site</span>
-            <ExternalLink className="w-3 h-3" />
+            <span>@iaadi8</span>
+            <ExternalLink className="w-3 h-3 text-zinc-400" />
           </a>
+          <Link
+            href="/admin"
+            className="text-zinc-400 hover:text-zinc-700 transition-colors"
+          >
+            Admin
+          </Link>
         </div>
+
       </div>
     </footer>
   );

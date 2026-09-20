@@ -1,0 +1,396 @@
+"use client";
+
+import React, { useState, useMemo } from "react";
+import Link from "next/link";
+import { 
+  Sparkles, 
+  Search, 
+  CheckCircle2, 
+  ArrowUpRight, 
+  Users, 
+  Eye, 
+  Calendar,
+  Layers,
+  ArrowRight,
+  TrendingUp,
+  ShieldCheck
+} from "lucide-react";
+
+interface Creator {
+  id: string;
+  username: string;
+  name: string;
+  avatarUrl: string;
+  bio?: string | null;
+  location?: string | null;
+  website?: string | null;
+  followersCount: number;
+  followingCount: number;
+  isVerified?: boolean;
+  weeklyPrice: number;
+  isListingActive: boolean;
+  category: string;
+  defaultBannerUrl?: string;
+  activeSponsorship?: any | null;
+}
+
+interface MarketplaceViewProps {
+  creators: Creator[];
+  stats: {
+    totalCreators: number;
+    totalAudienceReach: number;
+    totalBookings: number;
+    totalGmv: number;
+    totalClicks: number;
+    totalVisits: number;
+  };
+}
+
+const CATEGORIES = ["All", "Tech & Dev", "AI & ML", "Indie Maker", "Crypto"];
+
+export default function MarketplaceView({ creators, stats }: MarketplaceViewProps) {
+  const [selectedCategory, setSelectedCategory] = useState("All");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [sortBy, setSortBy] = useState<"followers" | "price_asc" | "price_desc">("followers");
+
+  // Filter & sort logic
+  const filteredCreators = useMemo(() => {
+    let list = [...creators];
+
+    if (selectedCategory !== "All") {
+      list = list.filter((c) => c.category === selectedCategory);
+    }
+
+    if (searchQuery.trim() !== "") {
+      const q = searchQuery.toLowerCase().trim();
+      list = list.filter(
+        (c) =>
+          c.username.toLowerCase().includes(q) ||
+          c.name.toLowerCase().includes(q) ||
+          (c.bio && c.bio.toLowerCase().includes(q))
+      );
+    }
+
+    list.sort((a, b) => {
+      if (sortBy === "followers") {
+        return b.followersCount - a.followersCount;
+      }
+      if (sortBy === "price_asc") {
+        return a.weeklyPrice - b.weeklyPrice;
+      }
+      if (sortBy === "price_desc") {
+        return b.weeklyPrice - a.weeklyPrice;
+      }
+      return 0;
+    });
+
+    return list;
+  }, [creators, selectedCategory, searchQuery, sortBy]);
+
+  return (
+    <div className="space-y-12 pb-16">
+      
+      {/* Hero Section */}
+      <section className="text-center space-y-5 pt-4 pb-2">
+        <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white border border-zinc-200 text-xs text-zinc-600 shadow-2xs">
+          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+          <span className="font-semibold text-zinc-900">{stats.totalAudienceReach.toLocaleString()}+</span>
+          <span>combined creator impressions</span>
+        </div>
+
+        <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-zinc-900 max-w-3xl mx-auto leading-[1.15]">
+          Rent Twitter Banners from High-Reach Creators
+        </h1>
+
+        <p className="text-sm sm:text-base text-zinc-600 max-w-xl mx-auto leading-relaxed">
+          Book prime 1500×500 real estate directly on verified Twitter profiles for 1 week.
+          Zero algorithmic decay. 100% direct visibility.
+        </p>
+
+        {/* Dual CTAs */}
+        <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
+          <a
+            href="#creators-grid"
+            className="px-5 py-2.5 rounded-xl bg-zinc-900 text-white hover:bg-zinc-800 transition-all font-semibold text-xs sm:text-sm shadow-xs flex items-center gap-2"
+          >
+            <span>Browse Creators</span>
+            <ArrowRight className="w-4 h-4" />
+          </a>
+
+          <a
+            href="/api/auth/twitter/login"
+            className="px-5 py-2.5 rounded-xl bg-white border border-zinc-200 hover:bg-zinc-50 transition-all text-zinc-900 font-semibold text-xs sm:text-sm shadow-2xs flex items-center gap-2"
+          >
+            <Sparkles className="w-4 h-4 text-amber-500" />
+            <span>List Your Banner ($/week)</span>
+          </a>
+        </div>
+
+        {/* Highlight Stats Row */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 max-w-2xl mx-auto pt-6">
+          <div className="p-3.5 rounded-xl bg-white border border-zinc-200/80 shadow-2xs">
+            <div className="text-lg sm:text-xl font-bold text-zinc-900">{stats.totalCreators}</div>
+            <div className="text-[11px] text-zinc-500 font-medium">Verified Creators</div>
+          </div>
+          <div className="p-3.5 rounded-xl bg-white border border-zinc-200/80 shadow-2xs">
+            <div className="text-lg sm:text-xl font-bold text-zinc-900">{stats.totalAudienceReach.toLocaleString()}</div>
+            <div className="text-[11px] text-zinc-500 font-medium">Total Followers</div>
+          </div>
+          <div className="p-3.5 rounded-xl bg-white border border-zinc-200/80 shadow-2xs">
+            <div className="text-lg sm:text-xl font-bold text-zinc-900">1 Week</div>
+            <div className="text-[11px] text-zinc-500 font-medium">Rental Duration</div>
+          </div>
+          <div className="p-3.5 rounded-xl bg-white border border-zinc-200/80 shadow-2xs">
+            <div className="text-lg sm:text-xl font-bold text-zinc-900">Instant</div>
+            <div className="text-[11px] text-zinc-500 font-medium">Banner Preview</div>
+          </div>
+        </div>
+      </section>
+
+      {/* Filter & Search Bar */}
+      <section id="creators-grid" className="space-y-4 scroll-mt-20">
+        <div className="flex flex-col md:flex-row items-center justify-between gap-3">
+          
+          {/* Categories */}
+          <div className="flex items-center gap-1.5 overflow-x-auto w-full md:w-auto pb-1 md:pb-0 scrollbar-none">
+            {CATEGORIES.map((cat) => (
+              <button
+                key={cat}
+                onClick={() => setSelectedCategory(cat)}
+                className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all ${
+                  selectedCategory === cat
+                    ? "bg-zinc-900 text-white shadow-xs"
+                    : "bg-white text-zinc-600 hover:bg-zinc-100 border border-zinc-200/80"
+                }`}
+              >
+                {cat}
+              </button>
+            ))}
+          </div>
+
+          {/* Search & Sort Controls */}
+          <div className="flex items-center gap-2.5 w-full md:w-auto">
+            <div className="relative flex-1 md:w-64">
+              <Search className="w-3.5 h-3.5 text-zinc-400 absolute left-3 top-1/2 -translate-y-1/2" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search creator or @handle..."
+                className="w-full pl-9 pr-3 py-1.5 text-xs rounded-lg bg-white border border-zinc-200/80 text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-1 focus:ring-zinc-900"
+              />
+            </div>
+
+            <select
+              value={sortBy}
+              onChange={(e: any) => setSortBy(e.target.value)}
+              className="px-2.5 py-1.5 text-xs rounded-lg bg-white border border-zinc-200/80 text-zinc-700 font-medium focus:outline-none focus:ring-1 focus:ring-zinc-900"
+            >
+              <option value="followers">Most Followers</option>
+              <option value="price_asc">Lowest Price</option>
+              <option value="price_desc">Highest Price</option>
+            </select>
+          </div>
+
+        </div>
+
+        {/* Creator Cards Grid */}
+        {filteredCreators.length === 0 ? (
+          <div className="text-center py-16 bg-white rounded-2xl border border-zinc-200/80 p-8 space-y-3">
+            <Users className="w-8 h-8 text-zinc-400 mx-auto" />
+            <h3 className="text-base font-bold text-zinc-900">No creators found</h3>
+            <p className="text-xs text-zinc-500 max-w-sm mx-auto">
+              Try adjusting your category filter or search query, or be the first to list in this category!
+            </p>
+            <a
+              href="/api/auth/twitter/login"
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-zinc-900 text-white text-xs font-semibold hover:bg-zinc-800 transition-colors mt-2"
+            >
+              <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+              <span>List Your Banner</span>
+            </a>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            {filteredCreators.map((creator) => {
+              const activeSponsorship = creator.activeSponsorship;
+              const bannerSrc =
+                activeSponsorship?.bannerImageUrl ||
+                creator.defaultBannerUrl ||
+                "/banner.png";
+
+              return (
+                <div
+                  key={creator.id}
+                  className="group bg-white rounded-2xl border border-zinc-200/80 hover:border-zinc-300 shadow-xs hover:shadow-md transition-all overflow-hidden flex flex-col justify-between"
+                >
+                  <div>
+                    {/* Banner Thumbnail (3:1) */}
+                    <div className="relative aspect-[3/1] w-full bg-zinc-100 overflow-hidden">
+                      <img
+                        src={bannerSrc}
+                        alt={`${creator.name}'s banner`}
+                        className="w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-500"
+                        onError={(e) => {
+                          e.currentTarget.src = "/banner.png";
+                        }}
+                      />
+
+                      {/* Status Tag */}
+                      <div className="absolute top-2.5 right-2.5">
+                        {activeSponsorship ? (
+                          <span className="px-2.5 py-1 rounded-full bg-black/80 text-white text-[10px] font-semibold backdrop-blur-sm border border-white/10">
+                            Booked
+                          </span>
+                        ) : (
+                          <span className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-600 text-white text-[10px] font-semibold backdrop-blur-sm shadow-xs">
+                            <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
+                            Available Now
+                          </span>
+                        )}
+                      </div>
+
+                      {/* Category Badge */}
+                      <div className="absolute top-2.5 left-2.5">
+                        <span className="px-2.5 py-1 rounded-full bg-white/90 text-zinc-700 text-[10px] font-semibold backdrop-blur-sm shadow-2xs border border-zinc-200/60">
+                          {creator.category}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Creator Details */}
+                    <div className="p-4 sm:p-5 space-y-3">
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="flex items-center gap-2.5">
+                          <img
+                            src={creator.avatarUrl || "/avatar.png"}
+                            alt={creator.name}
+                            className="w-10 h-10 rounded-full object-cover border border-zinc-200 shrink-0"
+                            onError={(e) => {
+                              e.currentTarget.src = "/avatar.png";
+                            }}
+                          />
+                          <div>
+                            <div className="flex items-center gap-1">
+                              <h3 className="text-sm font-bold text-zinc-900 group-hover:text-black">
+                                {creator.name}
+                              </h3>
+                              {creator.isVerified && (
+                                <CheckCircle2 className="w-3.5 h-3.5 text-[#1d9bf0]" />
+                              )}
+                            </div>
+                            <span className="text-xs text-zinc-500 font-medium">
+                              @{creator.username}
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Follower Metric */}
+                        <div className="text-right shrink-0">
+                          <div className="text-xs font-bold text-zinc-900">
+                            {creator.followersCount.toLocaleString()}
+                          </div>
+                          <div className="text-[10px] text-zinc-400 font-medium">Followers</div>
+                        </div>
+                      </div>
+
+                      {/* Bio */}
+                      {creator.bio && (
+                        <p className="text-xs text-zinc-600 line-clamp-2 leading-relaxed">
+                          {creator.bio}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Card Footer / Rent Action */}
+                  <div className="px-4 sm:px-5 py-3 bg-zinc-50/60 border-t border-zinc-100 flex items-center justify-between">
+                    <div>
+                      <div className="text-xs text-zinc-400 font-medium">Weekly Rate</div>
+                      <div className="text-sm font-bold text-zinc-900">
+                        ${creator.weeklyPrice.toFixed(0)} <span className="text-[11px] font-normal text-zinc-500">/ week</span>
+                      </div>
+                    </div>
+
+                    <Link
+                      href={`/${creator.username}`}
+                      className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-zinc-900 hover:bg-zinc-800 text-white text-xs font-semibold transition-colors shadow-2xs"
+                    >
+                      <span>Rent Banner</span>
+                      <ArrowUpRight className="w-3.5 h-3.5 text-zinc-300" />
+                    </Link>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </section>
+
+      {/* How it Works Section */}
+      <section className="bg-white rounded-2xl border border-zinc-200/80 p-6 sm:p-8 space-y-6 shadow-xs">
+        <div className="text-center space-y-1">
+          <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-zinc-900">
+            How twitterbanner.lol Works
+          </h2>
+          <p className="text-xs sm:text-sm text-zinc-500">
+            A frictionless marketplace connecting verified Twitter creators with brands.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5 pt-2">
+          <div className="p-4 rounded-xl bg-zinc-50 border border-zinc-200/60 space-y-2">
+            <span className="w-6 h-6 rounded-full bg-zinc-900 text-white text-xs font-bold flex items-center justify-center">
+              1
+            </span>
+            <h3 className="text-sm font-bold text-zinc-900">Choose a Creator</h3>
+            <p className="text-xs text-zinc-500 leading-relaxed">
+              Browse top verified creators by niche, audience size, or rate. Check their real Twitter metrics and bio.
+            </p>
+          </div>
+
+          <div className="p-4 rounded-xl bg-zinc-50 border border-zinc-200/60 space-y-2">
+            <span className="w-6 h-6 rounded-full bg-zinc-900 text-white text-xs font-bold flex items-center justify-center">
+              2
+            </span>
+            <h3 className="text-sm font-bold text-zinc-900">Upload & Live Preview</h3>
+            <p className="text-xs text-zinc-500 leading-relaxed">
+              Upload your 1500×500 banner and test your URL. Preview how it renders inside the creator's real profile mockup.
+            </p>
+          </div>
+
+          <div className="p-4 rounded-xl bg-zinc-50 border border-zinc-200/60 space-y-2">
+            <span className="w-6 h-6 rounded-full bg-zinc-900 text-white text-xs font-bold flex items-center justify-center">
+              3
+            </span>
+            <h3 className="text-sm font-bold text-zinc-900">Rent for 1 Week</h3>
+            <p className="text-xs text-zinc-500 leading-relaxed">
+              Pay securely via Dodo Payments. The banner is reserved for your duration, driving clicks and high-intent attention.
+            </p>
+          </div>
+        </div>
+
+        {/* Creator Callout Banner */}
+        <div className="p-5 rounded-xl bg-zinc-900 text-white flex flex-col sm:flex-row items-center justify-between gap-4 mt-4">
+          <div className="space-y-1 text-center sm:text-left">
+            <div className="flex items-center justify-center sm:justify-start gap-1.5 text-amber-400 text-xs font-bold">
+              <Sparkles className="w-3.5 h-3.5" />
+              <span>Are you a Twitter / X creator?</span>
+            </div>
+            <p className="text-xs text-zinc-300">
+              Monetize your header space. Sign in with Twitter, set your weekly price, and start receiving brand sponsorships.
+            </p>
+          </div>
+
+          <a
+            href="/api/auth/twitter/login"
+            className="px-4 py-2 rounded-lg bg-white text-zinc-900 hover:bg-zinc-100 transition-colors font-bold text-xs whitespace-nowrap shadow-xs"
+          >
+            Start Monetizing
+          </a>
+        </div>
+      </section>
+
+    </div>
+  );
+}
