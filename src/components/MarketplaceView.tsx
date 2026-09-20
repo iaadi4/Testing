@@ -378,7 +378,7 @@ export default function MarketplaceView({
             </span>
             <h3 className="text-sm font-bold text-zinc-900">Upload & Live Preview</h3>
             <p className="text-xs text-zinc-500 leading-relaxed">
-              Upload your 1500×500 banner and test your URL. Preview how it renders inside the creator's real profile mockup.
+              Upload your 1500×500 banner and destination URL. Preview how it renders on the creator's real profile.
             </p>
           </div>
 

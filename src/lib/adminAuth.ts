@@ -1,7 +1,8 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
+import { prisma } from "@/lib/db";
 import { signPayload, verifySignedPayload, sessionCookieOptions } from "@/lib/auth";
-import { assertAdminPasswordConfigured } from "@/lib/env";
+import { getAdminPasswordFromEnv } from "@/lib/env";
 import { timingSafeCompare } from "@/lib/security";
 
 export const ADMIN_COOKIE_NAME = "tb_admin";
@@ -40,8 +41,20 @@ export async function isAdminAuthenticated(): Promise<boolean> {
   return verifyAdminToken(token);
 }
 
-export function verifyAdminPassword(password: string): boolean {
-  const expected = assertAdminPasswordConfigured();
+export async function resolveAdminPassword(): Promise<string | null> {
+  const fromEnv = getAdminPasswordFromEnv();
+  if (fromEnv) return fromEnv;
+
+  const settings = await prisma.siteSetting.findUnique({
+    where: { id: "default" },
+    select: { adminPassword: true },
+  });
+  return settings?.adminPassword?.trim() || null;
+}
+
+export async function verifyAdminPassword(password: string): Promise<boolean> {
+  const expected = await resolveAdminPassword();
+  if (!expected) return false;
   return timingSafeCompare(password, expected);
 }
 

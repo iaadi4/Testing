@@ -11,6 +11,8 @@ import {
 import { SPONSORSHIP_STATUSES, PAID_STATUSES } from "@/lib/site";
 import { revalidateMarketplace } from "@/lib/revalidate";
 
+export const runtime = "nodejs";
+
 const CREATOR_SELECT = {
   id: true,
   username: true,
@@ -66,7 +68,7 @@ export async function POST(req: NextRequest) {
           { status: 429 }
         );
       }
-      if (!password || typeof password !== "string" || !verifyAdminPassword(password)) {
+      if (!password || typeof password !== "string" || !(await verifyAdminPassword(password))) {
         return NextResponse.json({ error: "Invalid admin password" }, { status: 401 });
       }
       const token = await createAdminToken();

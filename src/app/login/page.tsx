@@ -2,10 +2,9 @@ import React from "react";
 import { Metadata } from "next";
 import Link from "next/link";
 import { getSessionUser } from "@/lib/auth";
-import { isTwitterConfigured } from "@/lib/twitterAuth";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
-import { Sparkles, ArrowRight, ShieldCheck, LogOut, CheckCircle2, AlertCircle } from "lucide-react";
+import { Sparkles, ArrowRight, ShieldCheck, LogOut, CheckCircle2 } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -91,18 +90,6 @@ export default async function LoginPage() {
             </div>
           ) : (
             <div className="space-y-4">
-              {!isTwitterConfigured && (
-                <div className="p-3.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-xs space-y-1">
-                  <div className="font-bold flex items-center gap-1.5">
-                    <AlertCircle className="w-4 h-4 text-amber-600 shrink-0" />
-                    <span>Twitter OAuth Setup Required</span>
-                  </div>
-                  <p className="text-[11px] text-amber-700 leading-relaxed">
-                    Set <code className="font-mono bg-amber-100/80 px-1 rounded">TWITTER_CLIENT_ID</code> and <code className="font-mono bg-amber-100/80 px-1 rounded">TWITTER_CLIENT_SECRET</code> in your environment variables to enable live Twitter OAuth 2.0 login.
-                  </p>
-                </div>
-              )}
-
               <a
                 href="/api/auth/twitter/login"
                 className="w-full inline-flex items-center justify-center gap-2.5 px-4 py-3 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-white font-bold text-xs sm:text-sm shadow-xs transition-all group"

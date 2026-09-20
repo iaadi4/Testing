@@ -35,7 +35,7 @@ export function getTwitterAuthorizationUrl(params: {
 }): string {
   const url = new URL("https://twitter.com/i/oauth2/authorize");
   url.searchParams.set("response_type", "code");
-  url.searchParams.set("client_id", TWITTER_CLIENT_ID || "demo_client_id");
+  url.searchParams.set("client_id", TWITTER_CLIENT_ID || "");
   url.searchParams.set("redirect_uri", params.redirectUri);
   url.searchParams.set("scope", "users.read tweet.read offline.access");
   url.searchParams.set("state", params.state);

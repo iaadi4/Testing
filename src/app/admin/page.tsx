@@ -48,6 +48,7 @@ export default function AdminPage() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const [tab, setTab] = useState<"creators" | "transactions">("creators");
@@ -63,6 +64,7 @@ export default function AdminPage() {
   const adminFetch = async (payload: Record<string, unknown>) => {
     const res = await fetch("/api/admin", {
       method: "POST",
+      credentials: "include",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
     });
@@ -71,9 +73,9 @@ export default function AdminPage() {
     return data;
   };
 
-  const loadData = async (extra: Record<string, unknown> = {}) => {
+  const loadData = async (extra: Record<string, unknown> = {}, quiet = false) => {
     setLoading(true);
-    setError(null);
+    if (!quiet) setError(null);
     try {
       const data = await adminFetch({
         action: "getData",
@@ -89,20 +91,20 @@ export default function AdminPage() {
       setIsAuthenticated(true);
     } catch (err) {
       setIsAuthenticated(false);
-      setError(err instanceof Error ? err.message : "Failed to load admin data");
+      if (!quiet) setError(err instanceof Error ? err.message : "Failed to load admin data");
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    loadData().catch(() => {});
+    loadData({}, true).catch(() => {});
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
+    setSubmitting(true);
     setError(null);
     try {
       await adminFetch({ action: "login", password });
@@ -111,7 +113,7 @@ export default function AdminPage() {
     } catch (err) {
       setError(err instanceof Error ? err.message : "Login failed");
     } finally {
-      setLoading(false);
+      setSubmitting(false);
     }
   };
 
@@ -182,10 +184,10 @@ export default function AdminPage() {
             />
             <button
               type="submit"
-              disabled={loading}
+              disabled={submitting}
               className="w-full py-2 bg-zinc-900 text-white rounded-lg text-xs font-semibold flex items-center justify-center gap-2 disabled:opacity-50"
             >
-              {loading && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+              {submitting && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
               Unlock Admin Panel
             </button>
           </form>

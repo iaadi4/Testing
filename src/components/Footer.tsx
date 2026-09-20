@@ -42,16 +42,6 @@ export function Footer() {
             </div>
           </div>
         </div>
-        <div className="pt-6 border-t border-zinc-100">
-          <p className="text-[10px] uppercase tracking-wide font-semibold text-zinc-400 mb-2">Find us on</p>
-          <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-zinc-500">
-            <a href="https://www.producthunt.com/" target="_blank" rel="noopener noreferrer" className="hover:text-zinc-900">Product Hunt</a>
-            <a href="https://alternativeto.net/" target="_blank" rel="noopener noreferrer" className="hover:text-zinc-900">AlternativeTo</a>
-            <a href="https://www.indiehackers.com/" target="_blank" rel="noopener noreferrer" className="hover:text-zinc-900">Indie Hackers</a>
-            <a href="https://news.ycombinator.com/" target="_blank" rel="noopener noreferrer" className="hover:text-zinc-900">Hacker News</a>
-          </div>
-          <p className="mt-2 text-[10px] text-zinc-400">Reciprocal launch badges go here after editorial listings go live. Do not buy dofollow placements.</p>
-        </div>
       </div>
     </footer>
   );
