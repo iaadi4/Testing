@@ -39,9 +39,11 @@ export default function CreatorDashboardView({
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [saveError, setSaveError] = useState("");
 
+  const [pendingBusy, setPendingBusy] = useState<string | null>(null);
+
   const storefrontUrl = typeof window !== "undefined"
-    ? `${window.location.origin}/@${user.username}`
-    : `https://www.twitterbanner.lol/@${user.username}`;
+    ? `${window.location.origin}/${user.username}`
+    : `https://www.twitterbanner.lol/${user.username}`;
 
   const copyStorefrontLink = () => {
     navigator.clipboard.writeText(storefrontUrl);
@@ -83,9 +85,28 @@ export default function CreatorDashboardView({
   };
 
   const now = new Date();
+  const pendingReviews = sponsorships.filter((s) => s.status === "AWAITING_APPROVAL");
   const activeSponsorship = sponsorships.find(
     (s) => s.status === "ACTIVE" && s.endDate && new Date(s.endDate) >= now
   );
+
+  const reviewBooking = async (sponsorshipId: string, action: "approve" | "reject") => {
+    setPendingBusy(sponsorshipId + action);
+    try {
+      const res = await fetch("/api/creator/bookings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ sponsorshipId, action }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || "Could not update booking");
+      window.location.reload();
+    } catch (err) {
+      setSaveError(err instanceof Error ? err.message : "Could not update booking");
+    } finally {
+      setPendingBusy(null);
+    }
+  };
 
   const totalEarnings = sponsorships
     .filter((s) => s.status === "ACTIVE" || s.status === "COMPLETED")
@@ -173,6 +194,12 @@ export default function CreatorDashboardView({
           </div>
 
         </div>
+
+        {user.removedAt && (
+          <div className="mt-5 p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs">
+            This listing has been removed from the marketplace. You can still view past bookings, but you cannot go live.
+          </div>
+        )}
 
         {/* Stats Grid */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-6 pt-5 border-t border-zinc-100">
@@ -281,6 +308,7 @@ export default function CreatorDashboardView({
 
             <button
               type="button"
+              disabled={Boolean(user.removedAt)}
               onClick={() => setIsListingActive(!isListingActive)}
               className={`w-11 h-6 rounded-full transition-colors relative ${
                 isListingActive ? "bg-zinc-900" : "bg-zinc-300"
@@ -321,6 +349,36 @@ export default function CreatorDashboardView({
         </form>
       </section>
 
+      {pendingReviews.length > 0 && (
+        <section className="bg-white rounded-2xl border border-amber-200 p-6 sm:p-7 shadow-xs space-y-4">
+          <h2 className="text-base font-bold text-zinc-900">Bookings waiting for your approval</h2>
+          <p className="text-xs text-zinc-500">The advertiser already paid. Approve to go live, or reject to mark a refund due.</p>
+          {pendingReviews.map((s) => (
+            <div key={s.id} className="space-y-3 p-4 rounded-xl bg-amber-50/50 border border-amber-100">
+              <img src={`/api/banner/${s.id}`} alt={s.brandName} className="w-full aspect-[3/1] object-cover rounded-lg border border-zinc-200" />
+              <div className="text-sm font-bold">{s.brandName} · ${s.amountPaid} · {s.durationWeeks}w</div>
+              <div className="text-xs text-zinc-500">{s.buyerName} · {s.buyerEmail} · {s.brandUrl}</div>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => reviewBooking(s.id, "approve")}
+                  disabled={pendingBusy !== null}
+                  className="px-3 py-1.5 rounded-lg bg-zinc-900 text-white text-xs font-semibold"
+                >
+                  {pendingBusy === s.id + "approve" ? "Approving..." : "Approve"}
+                </button>
+                <button
+                  onClick={() => reviewBooking(s.id, "reject")}
+                  disabled={pendingBusy !== null}
+                  className="px-3 py-1.5 rounded-lg border border-rose-200 text-rose-700 text-xs font-semibold"
+                >
+                  {pendingBusy === s.id + "reject" ? "Rejecting..." : "Reject"}
+                </button>
+              </div>
+            </div>
+          ))}
+        </section>
+      )}
+
       {/* Active Sponsor Fulfillment Section */}
       <section className="bg-white rounded-2xl border border-zinc-200/80 p-6 sm:p-7 shadow-xs space-y-4">
         <div className="flex items-center justify-between pb-3 border-b border-zinc-100">
@@ -350,7 +408,7 @@ export default function CreatorDashboardView({
             {/* Banner Preview */}
             <div className="relative aspect-[3/1] w-full rounded-xl overflow-hidden bg-zinc-100 border border-zinc-200">
               <img
-                src={activeSponsorship.bannerImageUrl}
+                src={`/api/banner/${activeSponsorship.id}`}
                 alt={activeSponsorship.brandName}
                 className="w-full h-full object-cover"
               />
@@ -371,7 +429,7 @@ export default function CreatorDashboardView({
               </div>
 
               <button
-                onClick={() => downloadBanner(activeSponsorship.bannerImageUrl, activeSponsorship.brandName)}
+                onClick={() => downloadBanner(`/api/banner/${activeSponsorship.id}`, activeSponsorship.brandName)}
                 className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-zinc-900 hover:bg-zinc-800 text-white text-xs font-semibold transition-colors shadow-2xs whitespace-nowrap"
               >
                 <Download className="w-3.5 h-3.5" />

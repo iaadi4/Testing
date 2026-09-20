@@ -1,78 +1,39 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import { dodoClient, isDodoConfigured } from "@/lib/dodopayments";
+import { markPaidAwaitingApproval, publicOrder } from "@/lib/sponsorships";
 
 export async function POST(req: NextRequest) {
   try {
     const { sponsorshipId } = await req.json();
-
-    if (!sponsorshipId) {
+    if (!sponsorshipId || typeof sponsorshipId !== "string") {
       return NextResponse.json({ error: "Missing sponsorshipId" }, { status: 400 });
     }
 
-    const sponsorship = await prisma.sponsorship.findUnique({
+    let sponsorship = await prisma.sponsorship.findUnique({
       where: { id: sponsorshipId },
-      include: { creator: true },
+      include: { creator: { select: { username: true } } },
     });
 
     if (!sponsorship) {
       return NextResponse.json({ error: "Sponsorship not found" }, { status: 404 });
     }
 
-    // If already active, return immediately
-    if (sponsorship.status === "ACTIVE") {
-      return NextResponse.json({
-        success: true,
-        status: "ACTIVE",
-        sponsorship,
-      });
-    }
-
-    // In dev / test / mock mode, auto-activate
-    const isTestMode =
-      process.env.NODE_ENV !== "production" ||
-      !isDodoConfigured ||
-      process.env.DODO_PAYMENTS_ENVIRONMENT === "test_mode";
-
-    if (isTestMode) {
-      const startDate = new Date();
-      const durationWeeks = sponsorship.durationWeeks || 1;
-      const endDate = new Date(startDate.getTime() + durationWeeks * 7 * 24 * 60 * 60 * 1000);
-
-      await prisma.sponsorship.updateMany({
-        where: {
-          creatorId: sponsorship.creatorId,
-          status: "ACTIVE",
-          id: { not: sponsorship.id },
-        },
-        data: { status: "COMPLETED" },
-      });
-
-      const updated = await prisma.sponsorship.update({
-        where: { id: sponsorship.id },
-        data: {
-          status: "ACTIVE",
-          startDate,
-          endDate,
-          dodoPaymentId: `sim_${Date.now()}`,
-        },
-        include: { creator: true },
-      });
-
-      return NextResponse.json({
-        success: true,
-        status: "ACTIVE",
-        sponsorship: updated,
-      });
+    if (process.env.NODE_ENV !== "production" && sponsorship.status === "PENDING") {
+      const updated = await markPaidAwaitingApproval(sponsorship.id, `sim_${Date.now()}`);
+      if (updated) {
+        sponsorship = {
+          ...updated,
+          creator: sponsorship.creator,
+        };
+      }
     }
 
     return NextResponse.json({
-      success: false,
-      status: sponsorship.status,
-      message: "Payment still pending webhook verification",
+      success: sponsorship.status !== "PENDING",
+      ...publicOrder(sponsorship),
     });
-  } catch (error: any) {
+  } catch (error) {
     console.error("Verification error:", error);
-    return NextResponse.json({ error: error.message || "Verification failed" }, { status: 500 });
+    return NextResponse.json({ error: "Verification failed" }, { status: 500 });
   }
 }

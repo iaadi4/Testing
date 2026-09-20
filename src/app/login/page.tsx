@@ -10,8 +10,9 @@ import { Sparkles, ArrowRight, ShieldCheck, LogOut, CheckCircle2, AlertCircle } 
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "List Your Banner | Sign In - twitterbanner.lol",
+  title: "List Your Banner",
   description: "Sign in with Twitter / X to set your weekly banner rental price and start monetizing your Twitter profile.",
+  robots: { index: false, follow: false },
 };
 
 export default async function LoginPage() {

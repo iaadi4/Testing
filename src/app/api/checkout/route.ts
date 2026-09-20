@@ -1,12 +1,21 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { createCheckout } from "@/lib/dodopayments";
-import { sanitizeString, isValidEmail, isValidHttpUrl } from "@/lib/security";
+import { sanitizeString, isValidEmail, isValidHttpUrl, checkRateLimit, getClientIp, validateBannerImageUrl } from "@/lib/security";
+import { getSiteUrl } from "@/lib/site";
 
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json();
+    const ip = getClientIp(req);
+    const rate = checkRateLimit(`checkout_${ip}`, 8, 15 * 60 * 1000);
+    if (!rate.allowed) {
+      return NextResponse.json(
+        { error: `Too many checkout attempts. Try again in ${rate.resetInSec}s.` },
+        { status: 429 }
+      );
+    }
 
+    const body = await req.json();
     const {
       creatorId,
       buyerName,
@@ -19,12 +28,11 @@ export async function POST(req: NextRequest) {
       durationWeeks = 1,
     } = body;
 
-    // Validation
     if (!creatorId || typeof creatorId !== "string") {
       return NextResponse.json({ error: "Missing creator ID" }, { status: 400 });
     }
 
-    if (!buyerName || !buyerEmail || !brandName || !brandUrl || !bannerImageUrl) {
+    if (!buyerName || !buyerEmail || !brandName || !brandUrl) {
       return NextResponse.json({ error: "Please fill in all required fields" }, { status: 400 });
     }
 
@@ -36,14 +44,18 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Invalid brand URL" }, { status: 400 });
     }
 
+    const banner = validateBannerImageUrl(bannerImageUrl);
+    if (!banner.ok) {
+      return NextResponse.json({ error: banner.error }, { status: 400 });
+    }
+
     const weeks = Math.max(1, Math.min(12, parseInt(String(durationWeeks), 10) || 1));
 
-    // Verify creator exists and is accepting sponsors
     const creator = await prisma.user.findUnique({
       where: { id: creatorId },
     });
 
-    if (!creator) {
+    if (!creator || creator.removedAt) {
       return NextResponse.json({ error: "Creator not found" }, { status: 404 });
     }
 
@@ -53,7 +65,6 @@ export async function POST(req: NextRequest) {
 
     const totalAmount = creator.weeklyPrice * weeks;
 
-    // Create pending sponsorship record
     const sponsorship = await prisma.sponsorship.create({
       data: {
         creatorId: creator.id,
@@ -63,21 +74,17 @@ export async function POST(req: NextRequest) {
         brandName: sanitizeString(brandName, 100),
         brandUrl: brandUrl.trim(),
         tagline: tagline ? sanitizeString(tagline, 200) : null,
-        bannerImageUrl,
+        bannerImageUrl: banner.value,
         durationWeeks: weeks,
         amountPaid: totalAmount,
         status: "PENDING",
       },
     });
 
-    const appUrl =
-      process.env.APP_URL ||
-      process.env.NEXT_PUBLIC_APP_URL ||
-      req.nextUrl.origin;
-
+    const appUrl = getSiteUrl() || req.nextUrl.origin;
     const returnUrl = `${appUrl}/sponsor/success?sponsorship_id=${sponsorship.id}`;
 
-    const { checkoutUrl, isMock } = await createCheckout({
+    const { checkoutUrl, isMock, sessionId } = await createCheckout({
       sponsorshipId: sponsorship.id,
       creatorId: creator.id,
       buyerName: sponsorship.buyerName,
@@ -87,14 +94,22 @@ export async function POST(req: NextRequest) {
       returnUrl,
     });
 
+    if (sessionId) {
+      await prisma.sponsorship.update({
+        where: { id: sponsorship.id },
+        data: { dodoSessionId: sessionId },
+      });
+    }
+
     return NextResponse.json({
       success: true,
       checkoutUrl,
       sponsorshipId: sponsorship.id,
       isMock,
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Checkout creation error:", error);
-    return NextResponse.json({ error: error.message || "Failed to create checkout" }, { status: 500 });
+    const message = error instanceof Error ? error.message : "Failed to create checkout";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

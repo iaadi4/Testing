@@ -1,19 +1,23 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSessionUser } from "@/lib/auth";
 import { prisma } from "@/lib/db";
-import { sanitizeString } from "@/lib/security";
+import { sanitizeString, isValidDefaultBannerUrl } from "@/lib/security";
+import { CATEGORIES } from "@/lib/site";
+import { revalidateMarketplace } from "@/lib/revalidate";
 
 export async function POST(req: NextRequest) {
   const user = await getSessionUser();
   if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+  if (user.removedAt) {
+    return NextResponse.json({ error: "This creator account has been removed from the marketplace." }, { status: 403 });
+  }
 
   try {
     const body = await req.json();
     const { weeklyPrice, isListingActive, category, payoutNotes, defaultBannerUrl } = body;
-
-    const data: any = {};
+    const data: Record<string, unknown> = {};
 
     if (weeklyPrice !== undefined) {
       const price = parseFloat(String(weeklyPrice));
@@ -28,7 +32,11 @@ export async function POST(req: NextRequest) {
     }
 
     if (category !== undefined) {
-      data.category = sanitizeString(category, 50);
+      const next = sanitizeString(category, 50);
+      if (!CATEGORIES.includes(next as never)) {
+        return NextResponse.json({ error: "Invalid category" }, { status: 400 });
+      }
+      data.category = next;
     }
 
     if (payoutNotes !== undefined) {
@@ -36,6 +44,9 @@ export async function POST(req: NextRequest) {
     }
 
     if (defaultBannerUrl !== undefined && typeof defaultBannerUrl === "string") {
+      if (!isValidDefaultBannerUrl(defaultBannerUrl)) {
+        return NextResponse.json({ error: "Invalid default banner URL" }, { status: 400 });
+      }
       data.defaultBannerUrl = defaultBannerUrl;
     }
 
@@ -43,6 +54,8 @@ export async function POST(req: NextRequest) {
       where: { id: user.id },
       data,
     });
+
+    await revalidateMarketplace(updated.username);
 
     return NextResponse.json({
       success: true,
@@ -56,8 +69,8 @@ export async function POST(req: NextRequest) {
         defaultBannerUrl: updated.defaultBannerUrl,
       },
     });
-  } catch (error: any) {
+  } catch (error) {
     console.error("Failed to update creator settings:", error);
-    return NextResponse.json({ error: error.message || "Failed to update settings" }, { status: 500 });
+    return NextResponse.json({ error: "Failed to update settings" }, { status: 500 });
   }
 }

@@ -67,6 +67,8 @@ export function timingSafeCompare(a: string, b: string): boolean {
 }
 
 // 3. Strict URL Validation
+const PRIVATE_HOSTS = /^(localhost|127\.|10\.|192\.168\.|172\.(1[6-9]|2\d|3[0-1])\.|0\.0\.0\.0|\[::1\]|169\.254\.|metadata\.google)/i;
+
 export function isValidHttpUrl(string: string): boolean {
   let url: URL;
   try {
@@ -74,7 +76,57 @@ export function isValidHttpUrl(string: string): boolean {
   } catch {
     return false;
   }
-  return url.protocol === "http:" || url.protocol === "https:";
+  if (url.protocol !== "http:" && url.protocol !== "https:") return false;
+  if (PRIVATE_HOSTS.test(url.hostname)) return false;
+  return true;
+}
+
+export function isSafePublicUrl(value: string): boolean {
+  return isValidHttpUrl(value) && value.startsWith("https:");
+}
+
+export function isValidDefaultBannerUrl(value: string): boolean {
+  if (value === "/banner.png") return true;
+  return isValidHttpUrl(value);
+}
+
+const DATA_IMAGE_RE = /^data:image\/(jpeg|jpg|png|webp);base64,([A-Za-z0-9+/=\s]+)$/i;
+const MAX_BANNER_BYTES = 400 * 1024;
+
+export function validateBannerImageUrl(value: unknown): { ok: true; value: string } | { ok: false; error: string } {
+  if (typeof value !== "string" || !value.trim()) {
+    return { ok: false, error: "Banner image is required" };
+  }
+  const raw = value.trim();
+  if (raw.startsWith("data:")) {
+    const match = raw.match(DATA_IMAGE_RE);
+    if (!match) {
+      return { ok: false, error: "Banner must be a JPEG, PNG, or WebP image" };
+    }
+    const b64 = match[2].replace(/\s/g, "");
+    const bytes = Math.floor((b64.length * 3) / 4);
+    if (bytes > MAX_BANNER_BYTES) {
+      return { ok: false, error: "Banner image is too large. Compress to under 400KB." };
+    }
+    return { ok: true, value: raw };
+  }
+  if (!isValidHttpUrl(raw)) {
+    return { ok: false, error: "Banner image URL is invalid" };
+  }
+  return { ok: true, value: raw };
+}
+
+export function decodeDataUrl(dataUrl: string): { contentType: string; buffer: Buffer } | null {
+  const match = dataUrl.match(/^data:([^;]+);base64,(.+)$/);
+  if (!match) return null;
+  try {
+    return {
+      contentType: match[1],
+      buffer: Buffer.from(match[2], "base64"),
+    };
+  } catch {
+    return null;
+  }
 }
 
 // 4. Input Sanitization

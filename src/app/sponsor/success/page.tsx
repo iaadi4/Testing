@@ -4,9 +4,7 @@ import React, { useEffect, useState, Suspense } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import confetti from "canvas-confetti";
-import { ArrowLeft, ExternalLink, Loader2, CheckCircle2, Sparkles } from "lucide-react";
-import { Navbar } from "@/components/Navbar";
-import { Footer } from "@/components/Footer";
+import { ExternalLink, Loader2, CheckCircle2, Sparkles } from "lucide-react";
 
 function SuccessContent() {
   const searchParams = useSearchParams();
@@ -48,8 +46,8 @@ function SuccessContent() {
 
             if (verifyRes.ok) {
               const verifyData = await verifyRes.json();
-              if (verifyData.success && verifyData.sponsorship) {
-                setSponsorship(verifyData.sponsorship);
+              if (verifyData.success || verifyData.status) {
+                setSponsorship(verifyData);
                 break;
               }
             }
@@ -82,17 +80,17 @@ function SuccessContent() {
 
         <div className="space-y-1.5">
           <h1 className="text-2xl font-bold tracking-tight text-zinc-900">
-            Payment Successful!
+            Submitted for creator approval
           </h1>
           <p className="text-xs sm:text-sm text-zinc-500">
-            Your Twitter banner sponsorship has been secured and confirmed.
+            Payment is captured. The creator reviews your 1500×500 creative before it goes live, usually within 24 hours.
           </p>
         </div>
 
         {loading ? (
           <div className="py-8 flex flex-col items-center justify-center gap-3 text-zinc-400">
             <Loader2 className="w-5 h-5 animate-spin" />
-            <span className="text-xs">Activating your banner reservation...</span>
+            <span className="text-xs">Confirming your booking...</span>
           </div>
         ) : sponsorship ? (
           <div className="space-y-5 text-left pt-2">
@@ -100,7 +98,7 @@ function SuccessContent() {
             {/* Banner Preview */}
             <div className="rounded-xl overflow-hidden border border-zinc-200 bg-zinc-100 aspect-[3/1]">
               <img
-                src={sponsorship.bannerImageUrl}
+                src={`/api/banner/${sponsorship.sponsorshipId || sponsorshipId}`}
                 alt={sponsorship.brandName}
                 className="w-full h-full object-cover"
               />
@@ -112,10 +110,10 @@ function SuccessContent() {
                 <span className="text-zinc-500 font-medium">Brand</span>
                 <span className="font-semibold text-zinc-900">{sponsorship.brandName}</span>
               </div>
-              {sponsorship.creator && (
+              {sponsorship.creatorUsername && (
                 <div className="flex justify-between">
                   <span className="text-zinc-500 font-medium">Creator</span>
-                  <span className="font-semibold text-zinc-900">@{sponsorship.creator.username}</span>
+                  <span className="font-semibold text-zinc-900">@{sponsorship.creatorUsername}</span>
                 </div>
               )}
               <div className="flex justify-between">
@@ -145,15 +143,15 @@ function SuccessContent() {
             <div className="p-3 bg-emerald-50 rounded-xl border border-emerald-200/60 text-emerald-800 text-xs flex items-center gap-2">
               <Sparkles className="w-4 h-4 text-emerald-600 shrink-0" />
               <span>
-                The creator has been notified to set your 1500×500 graphic on their verified Twitter profile!
+                Status: {sponsorship.status || "AWAITING_APPROVAL"}. Your banner goes live only after the creator approves it.
               </span>
             </div>
 
             {/* Actions */}
             <div className="flex flex-col sm:flex-row items-center gap-3 pt-2">
-              {sponsorship.creator ? (
+              {sponsorship.creatorUsername ? (
                 <Link
-                  href={`/${sponsorship.creator.username}`}
+                  href={`/${sponsorship.creatorUsername}`}
                   className="w-full sm:w-1/2 py-2.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-white text-xs font-semibold text-center transition-colors shadow-2xs"
                 >
                   View Creator Storefront
@@ -197,20 +195,14 @@ function SuccessContent() {
 
 export default function SuccessPage() {
   return (
-    <div className="min-h-screen bg-[#fafafa] bg-[radial-gradient(#e5e7eb_1.2px,transparent_1.2px)] [background-size:20px_20px] text-zinc-900 flex flex-col font-sans selection:bg-zinc-900 selection:text-white">
-      <Navbar />
-      <main className="flex-1 flex items-center justify-center">
-        <Suspense
-          fallback={
-            <div className="py-16 text-center text-xs text-zinc-400">
-              Loading confirmation...
-            </div>
-          }
-        >
-          <SuccessContent />
-        </Suspense>
-      </main>
-      <Footer />
-    </div>
+    <Suspense
+      fallback={
+        <div className="py-16 text-center text-xs text-zinc-400">
+          Loading confirmation...
+        </div>
+      }
+    >
+      <SuccessContent />
+    </Suspense>
   );
 }

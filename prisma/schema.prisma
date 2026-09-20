@@ -10,25 +10,24 @@ generator client {
 model User {
   id               String         @id @default(cuid())
   twitterId        String         @unique
-  username         String         @unique // Twitter handle without @ (lowercase)
-  name             String         // Display Name
-  avatarUrl        String         // High-res avatar
+  username         String         @unique
+  name             String
+  avatarUrl        String
   bio              String?
   location         String?
   website          String?
   followersCount   Int            @default(0)
   followingCount   Int            @default(0)
   isVerified       Boolean        @default(false)
-  
-  // Marketplace Settings
-  weeklyPrice      Float          @default(49.0) // $/week set by creator
-  isListingActive  Boolean        @default(true) // whether accepting sponsors
-  category         String         @default("Tech & Dev") // "Tech & Dev", "AI & ML", "Indie Maker", "Crypto", etc.
+
+  weeklyPrice      Float          @default(49.0)
+  isListingActive  Boolean        @default(true)
+  category         String         @default("Tech & Dev")
   defaultBannerUrl String         @default("/banner.png")
-  payoutNotes      String?        // Creator's payout email or instructions
-  role             String         @default("CREATOR") // "CREATOR" | "ADMIN"
-  
-  // Relations
+  payoutNotes      String?
+  role             String         @default("CREATOR")
+  removedAt        DateTime?
+
   sponsorships     Sponsorship[]  @relation("CreatorSponsorships")
   createdAt        DateTime       @default(now())
   updatedAt        DateTime       @updatedAt
@@ -38,34 +37,40 @@ model Sponsorship {
   id             String    @id @default(cuid())
   creatorId      String
   creator        User      @relation("CreatorSponsorships", fields: [creatorId], references: [id], onDelete: Cascade)
-  
-  // Advertiser / Buyer Info
+
   buyerName      String
   buyerEmail     String
   buyerTwitter   String?
   brandName      String
   brandUrl       String
   tagline        String?
-  bannerImageUrl String    // Base64 data URL or hosted image URL
-  
-  // Booking Terms
+  bannerImageUrl String
+
   durationWeeks  Int       @default(1)
-  amountPaid     Float     // Total paid (weeklyPrice * durationWeeks)
-  status         String    @default("PENDING") // "PENDING" | "ACTIVE" | "COMPLETED" | "CANCELLED"
+  amountPaid     Float
+  status         String    @default("PENDING")
   startDate      DateTime?
   endDate        DateTime?
   dodoPaymentId  String?
+  dodoSessionId  String?
+  approvedAt     DateTime?
+  rejectedAt     DateTime?
+  refundDue      Boolean   @default(false)
   clicksCount    Int       @default(0)
-  
+
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
+
+  @@index([dodoSessionId])
+  @@index([dodoPaymentId])
+  @@index([status])
 }
 
 model SiteSetting {
   id                  String   @id @default("default")
   platformFeePercent  Float    @default(0.0)
   featuredUsernames   String   @default("iaadi8")
-  adminPassword       String   @default("admin123")
+  adminPassword       String?
   totalVisits         Int      @default(0)
   updatedAt           DateTime @updatedAt
 }

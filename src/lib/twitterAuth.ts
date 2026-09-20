@@ -117,6 +117,10 @@ export async function upsertTwitterUser(twitterData: any) {
   const followersCount = twitterData.public_metrics?.followers_count ?? 0;
   const followingCount = twitterData.public_metrics?.following_count ?? 0;
 
+  const existing = await prisma.user.findUnique({
+    where: { twitterId: twitterData.id },
+  });
+
   const user = await prisma.user.upsert({
     where: { twitterId: twitterData.id },
     update: {
@@ -128,6 +132,7 @@ export async function upsertTwitterUser(twitterData: any) {
       followersCount,
       followingCount,
       isVerified: Boolean(twitterData.verified),
+      ...(existing?.removedAt ? { isListingActive: false } : {}),
     },
     create: {
       twitterId: twitterData.id,

@@ -3,7 +3,6 @@ import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 
 async function main() {
-  // 1. Initialize SiteSetting
   await prisma.siteSetting.upsert({
     where: { id: "default" },
     update: {},
@@ -11,12 +10,10 @@ async function main() {
       id: "default",
       platformFeePercent: 0.0,
       featuredUsernames: "iaadi8",
-      adminPassword: process.env.ADMIN_PASSWORD || "admin123",
       totalVisits: 0,
     },
   });
 
-  // 2. Real creator: @iaadi8
   await prisma.user.upsert({
     where: { username: "iaadi8" },
     update: {
@@ -29,7 +26,6 @@ async function main() {
       followingCount: 85,
       isVerified: true,
       weeklyPrice: 29.0,
-      isListingActive: true,
       category: "Tech & Dev",
       defaultBannerUrl: "/banner.png",
       role: "ADMIN",

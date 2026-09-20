@@ -17,56 +17,82 @@ export interface CreateCheckoutParams {
   creatorId: string;
   buyerName: string;
   buyerEmail: string;
-  amount: number; // in USD
+  amount: number;
   durationWeeks: number;
   returnUrl: string;
 }
 
-export async function createCheckout(params: CreateCheckoutParams): Promise<{ checkoutUrl: string; isMock: boolean }> {
+export interface CreateCheckoutResult {
+  checkoutUrl: string;
+  isMock: boolean;
+  sessionId: string | null;
+}
+
+export async function createCheckout(params: CreateCheckoutParams): Promise<CreateCheckoutResult> {
   const { sponsorshipId, creatorId, buyerName, buyerEmail, amount, durationWeeks, returnUrl } = params;
 
-  // If Dodo Payments is not configured, generate a simulated checkout link
   if (!dodoClient || !isDodoConfigured) {
-    const mockUrl = `${returnUrl}&mock=true&token=sim_${sponsorshipId.slice(-8)}`;
+    if (process.env.NODE_ENV === "production") {
+      throw new Error("Payment processing is not configured.");
+    }
     return {
-      checkoutUrl: mockUrl,
+      checkoutUrl: `${returnUrl}&mock=true&token=sim_${sponsorshipId.slice(-8)}`,
       isMock: true,
+      sessionId: `sim_${sponsorshipId}`,
     };
   }
 
   const productId = process.env.DODO_PRODUCT_ID || "pdt_banner_sponsor";
   const amountInCents = Math.round(amount * 100);
 
-  try {
-    const session = await dodoClient.checkoutSessions.create({
-      product_cart: [
-        {
-          product_id: productId,
-          quantity: 1,
-          amount: amountInCents,
-        },
-      ],
-      customer: {
-        email: buyerEmail,
-        name: buyerName,
+  const session = await dodoClient.checkoutSessions.create({
+    product_cart: [
+      {
+        product_id: productId,
+        quantity: 1,
+        amount: amountInCents,
       },
-      metadata: {
-        sponsorshipId,
-        creatorId,
-        durationWeeks: String(durationWeeks),
-      },
-      return_url: returnUrl,
-    });
+    ],
+    customer: {
+      email: buyerEmail,
+      name: buyerName,
+    },
+    metadata: {
+      sponsorshipId,
+      creatorId,
+      durationWeeks: String(durationWeeks),
+    },
+    return_url: returnUrl,
+  });
 
-    if (session.checkout_url) {
-      return {
-        checkoutUrl: session.checkout_url,
-        isMock: false,
-      };
-    }
+  const checkoutUrl = session.checkout_url;
+  if (!checkoutUrl) {
     throw new Error("No checkout_url returned from Dodo Payments");
-  } catch (error: any) {
-    console.error("Dodo checkout error:", error);
-    throw error;
   }
+
+  const sessionId =
+    (session as { session_id?: string; id?: string }).session_id ||
+    (session as { id?: string }).id ||
+    null;
+
+  return {
+    checkoutUrl,
+    isMock: false,
+    sessionId,
+  };
+}
+
+export function extractPaymentAmountCents(paymentData: Record<string, unknown>): number | null {
+  const candidates = [
+    paymentData.total_amount,
+    paymentData.amount,
+    paymentData.settlement_amount,
+    (paymentData.payment as { amount?: number } | undefined)?.amount,
+  ];
+  for (const value of candidates) {
+    if (typeof value === "number" && Number.isFinite(value) && value > 0) {
+      return value > 1000 ? value : Math.round(value * 100);
+    }
+  }
+  return null;
 }
