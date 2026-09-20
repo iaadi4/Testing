@@ -98,6 +98,83 @@ export default function HomeClient({ initialData }: HomeClientProps) {
         {/* History of Previous Bids (if any exist) */}
         <OutbidHistory fallenKings={fallenKings} />
 
+        {/* How It Works — SEO content section */}
+        <section className="mt-8 space-y-4">
+          <h2 className="text-lg font-bold tracking-tight text-zinc-900">How It Works</h2>
+          <div className="grid gap-3">
+            {[
+              {
+                step: "1",
+                title: "Pick Your Banner",
+                desc: "Upload a 1500×500 banner image. Add your company name, tagline, and link.",
+              },
+              {
+                step: "2",
+                title: "Pay to Dethrone",
+                desc: "Pay $1 more than the current sponsor. That\u2019s it. No auctions, no algorithms, no waiting.",
+              },
+              {
+                step: "3",
+                title: "Reign as King",
+                desc: "Your banner goes live on @iaadi8\u2019s Twitter profile instantly. Every profile visitor sees your brand — until someone outbids you.",
+              },
+            ].map((item) => (
+              <div
+                key={item.step}
+                className="flex gap-3 items-start p-3 rounded-lg bg-white/80 border border-zinc-200/80"
+              >
+                <span className="flex-shrink-0 w-6 h-6 rounded-full bg-zinc-900 text-white text-xs font-bold flex items-center justify-center">
+                  {item.step}
+                </span>
+                <div>
+                  <h3 className="text-sm font-semibold text-zinc-900">{item.title}</h3>
+                  <p className="text-xs text-zinc-500 leading-relaxed mt-0.5">{item.desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* FAQ — SEO content section with structured data keywords */}
+        <section className="mt-8 space-y-3 pb-4">
+          <h2 className="text-lg font-bold tracking-tight text-zinc-900">FAQ</h2>
+          <div className="space-y-2">
+            {[
+              {
+                q: "What is twitterbanner.lol?",
+                a: "twitterbanner.lol is a pay-to-dethrone Twitter banner sponsorship platform inspired by outbid.lol. Anyone can pay to replace the current banner on @iaadi8\u2019s Twitter/X profile. The concept is simple: outbid the current king to take the throne.",
+              },
+              {
+                q: "How much does it cost to sponsor the banner?",
+                a: "It starts at just $1. To dethrone the current sponsor, you pay $1 more than what they paid. There are no hidden fees, no subscriptions, and no algorithms — just pure pay-to-rank visibility.",
+              },
+              {
+                q: "What happens when someone outbids me?",
+                a: "Your banner gets replaced by the new sponsor\u2019s banner immediately. You join the \u201CFallen Kings\u201D hall of fame showing your reign duration and the amount you paid. Your brand still gets visibility in the bid history.",
+              },
+              {
+                q: "How is this different from outbid.lol?",
+                a: "outbid.lol is a pay-to-rank leaderboard directory. twitterbanner.lol takes that same competitive mechanic but anchors it to real social media real estate — a Twitter profile banner that gets organic daily impressions from every profile visitor.",
+              },
+              {
+                q: "Who sees my banner?",
+                a: "Everyone who visits @iaadi8\u2019s Twitter/X profile sees the current sponsor\u2019s banner. This includes organic visitors from tweets, replies, and retweets. It\u2019s direct, algorithmic-free visibility for your brand.",
+              },
+            ].map((item, i) => (
+              <details
+                key={i}
+                className="group rounded-lg bg-white/80 border border-zinc-200/80 overflow-hidden"
+              >
+                <summary className="cursor-pointer px-4 py-3 text-sm font-medium text-zinc-900 flex items-center justify-between hover:bg-zinc-50/50 transition-colors">
+                  {item.q}
+                  <span className="text-zinc-400 group-open:rotate-45 transition-transform text-lg leading-none">+</span>
+                </summary>
+                <p className="px-4 pb-3 text-xs text-zinc-500 leading-relaxed">{item.a}</p>
+              </details>
+            ))}
+          </div>
+        </section>
+
       </main>
 
       {/* Clean Footer */}
