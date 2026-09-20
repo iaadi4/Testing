@@ -19,6 +19,12 @@ export function Navbar() {
 
         {/* Links */}
         <div className="flex items-center gap-4 text-xs font-medium text-zinc-500">
+          <Link
+            href="/blog"
+            className="hover:text-zinc-900 transition-colors"
+          >
+            Blog
+          </Link>
           <a
             href="https://x.com/iaadi8"
             target="_blank"

@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import Link from "next/link";
 import { ExternalLink } from "lucide-react";
 
 export function Footer() {
@@ -22,10 +23,21 @@ export function Footer() {
             </a>
           </span>
           <span>•</span>
-          <span className="text-zinc-400">inspired by outbid.lol</span>
+          <Link
+            href="/blog/outbid-lol-phenomenon"
+            className="text-zinc-500 hover:text-zinc-900 hover:underline"
+          >
+            inspired by outbid.lol
+          </Link>
         </div>
 
         <div className="flex items-center gap-4 text-zinc-500">
+          <Link
+            href="/blog"
+            className="hover:text-zinc-900 transition-colors font-medium"
+          >
+            Blog
+          </Link>
           <a
             href="https://adityacodes.site"
             target="_blank"
