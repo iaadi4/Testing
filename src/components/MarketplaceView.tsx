@@ -117,13 +117,13 @@ export default function MarketplaceView({ creators, stats }: MarketplaceViewProp
             <ArrowRight className="w-4 h-4" />
           </a>
 
-          <a
-            href="/api/auth/twitter/login"
+          <Link
+            href="/login"
             className="px-5 py-2.5 rounded-xl bg-white border border-zinc-200 hover:bg-zinc-50 transition-all text-zinc-900 font-semibold text-xs sm:text-sm shadow-2xs flex items-center gap-2"
           >
             <Sparkles className="w-4 h-4 text-amber-500" />
             <span>List Your Banner ($/week)</span>
-          </a>
+          </Link>
         </div>
 
         {/* Real Analytics Stats Row */}
@@ -202,13 +202,13 @@ export default function MarketplaceView({ creators, stats }: MarketplaceViewProp
             <p className="text-xs text-zinc-500 max-w-sm mx-auto">
               Try adjusting your category filter or search query, or be the first to list in this category!
             </p>
-            <a
-              href="/api/auth/twitter/login"
+            <Link
+              href="/login"
               className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-zinc-900 text-white text-xs font-semibold hover:bg-zinc-800 transition-colors mt-2"
             >
               <Sparkles className="w-3.5 h-3.5 text-amber-400" />
               <span>List Your Banner</span>
-            </a>
+            </Link>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -382,12 +382,12 @@ export default function MarketplaceView({ creators, stats }: MarketplaceViewProp
             </p>
           </div>
 
-          <a
-            href="/api/auth/twitter/login"
+          <Link
+            href="/login"
             className="px-4 py-2 rounded-lg bg-white text-zinc-900 hover:bg-zinc-100 transition-colors font-bold text-xs whitespace-nowrap shadow-xs"
           >
             Start Monetizing
-          </a>
+          </Link>
         </div>
       </section>
 

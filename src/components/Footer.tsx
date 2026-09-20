@@ -27,13 +27,13 @@ export function Footer() {
           <Link href="/blog" className="hover:text-zinc-900 transition-colors">
             Blog
           </Link>
-          <a
-            href="/api/auth/twitter/login"
+          <Link
+            href="/login"
             className="hover:text-zinc-900 transition-colors flex items-center gap-1 text-zinc-900"
           >
             <Sparkles className="w-3 h-3 text-amber-500" />
             <span>List Banner</span>
-          </a>
+          </Link>
           <a
             href="https://x.com/iaadi8"
             target="_blank"

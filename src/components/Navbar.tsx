@@ -62,15 +62,18 @@ export function Navbar() {
           {loading ? (
             <div className="w-20 h-7 rounded-lg bg-zinc-100 animate-pulse" />
           ) : user ? (
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
               <Link
                 href="/dashboard"
                 className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-zinc-900 text-white hover:bg-zinc-800 transition-colors shadow-2xs font-medium"
               >
                 <img
-                  src={user.avatarUrl}
+                  src={user.avatarUrl || "/avatar.png"}
                   alt={user.name}
                   className="w-4 h-4 rounded-full object-cover border border-white/20"
+                  onError={(e) => {
+                    e.currentTarget.src = "/avatar.png";
+                  }}
                 />
                 <span>@{user.username}</span>
                 <LayoutDashboard className="w-3.5 h-3.5 text-zinc-300 ml-0.5" />
@@ -78,21 +81,22 @@ export function Navbar() {
 
               <a
                 href="/api/auth/logout"
-                title="Log out"
-                className="text-zinc-400 hover:text-zinc-700 transition-colors p-1"
+                title="Log out / Switch account"
+                className="inline-flex items-center gap-1 text-[11px] text-zinc-400 hover:text-rose-600 transition-colors px-2 py-1 rounded-md hover:bg-zinc-100"
               >
                 <LogOut className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">Log out</span>
               </a>
             </div>
           ) : (
             <div className="flex items-center gap-2">
-              <a
-                href="/api/auth/twitter/login"
+              <Link
+                href="/login"
                 className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-zinc-900 text-white hover:bg-zinc-800 transition-all font-semibold shadow-2xs text-xs"
               >
                 <Sparkles className="w-3.5 h-3.5 text-amber-300" />
                 <span>List Your Banner</span>
-              </a>
+              </Link>
             </div>
           )}
         </div>

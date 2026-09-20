@@ -14,7 +14,8 @@ import {
   TrendingUp, 
   Clock, 
   AlertCircle,
-  Share2
+  Share2,
+  LogOut
 } from "lucide-react";
 
 interface CreatorDashboardViewProps {
@@ -29,6 +30,7 @@ export default function CreatorDashboardView({
   sponsorships,
 }: CreatorDashboardViewProps) {
   const [weeklyPrice, setWeeklyPrice] = useState(user.weeklyPrice || 49);
+  const [savedPrice, setSavedPrice] = useState(user.weeklyPrice || 49);
   const [isListingActive, setIsListingActive] = useState(Boolean(user.isListingActive));
   const [category, setCategory] = useState(user.category || "Tech & Dev");
   const [payoutNotes, setPayoutNotes] = useState(user.payoutNotes || "");
@@ -70,6 +72,7 @@ export default function CreatorDashboardView({
         throw new Error(json.error || "Failed to update settings");
       }
 
+      setSavedPrice(parseFloat(String(weeklyPrice)));
       setSaveSuccess(true);
       setTimeout(() => setSaveSuccess(false), 3000);
     } catch (err: any) {
@@ -128,6 +131,15 @@ export default function CreatorDashboardView({
               <p className="text-xs text-zinc-500 font-medium">
                 @{user.username} • {user.followersCount.toLocaleString()} followers
               </p>
+              <div className="flex items-center gap-2 mt-1">
+                <a
+                  href="/api/auth/logout"
+                  className="inline-flex items-center gap-1 text-[11px] font-medium text-zinc-400 hover:text-rose-600 transition-colors"
+                >
+                  <LogOut className="w-3 h-3" />
+                  <span>Log out / Switch Account</span>
+                </a>
+              </div>
             </div>
           </div>
 
@@ -166,7 +178,7 @@ export default function CreatorDashboardView({
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-6 pt-5 border-t border-zinc-100">
           <div className="p-3 rounded-xl bg-zinc-50/70 border border-zinc-100">
             <div className="text-xs text-zinc-400 font-medium">Weekly Rate</div>
-            <div className="text-lg font-bold text-zinc-900 mt-0.5">${user.weeklyPrice}/wk</div>
+            <div className="text-lg font-bold text-zinc-900 mt-0.5">${savedPrice}/wk</div>
           </div>
           <div className="p-3 rounded-xl bg-zinc-50/70 border border-zinc-100">
             <div className="text-xs text-zinc-400 font-medium">Total Revenue</div>
@@ -183,97 +195,26 @@ export default function CreatorDashboardView({
         </div>
       </section>
 
-      {/* Active Sponsor Fulfillment Section */}
-      <section className="bg-white rounded-2xl border border-zinc-200/80 p-6 sm:p-7 shadow-xs space-y-4">
-        <div className="flex items-center justify-between pb-3 border-b border-zinc-100">
-          <div>
-            <h2 className="text-base font-bold text-zinc-900">
-              Current Live Sponsor Banner
-            </h2>
-            <p className="text-xs text-zinc-500">
-              Download the 1500×500 graphic and upload it to your X header.
-            </p>
-          </div>
-
-          {activeSponsorship ? (
-            <span className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-bold">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-              Active Now
-            </span>
-          ) : (
-            <span className="px-3 py-1 rounded-full bg-zinc-100 text-zinc-500 text-xs font-medium">
-              No Active Sponsor
-            </span>
-          )}
-        </div>
-
-        {activeSponsorship ? (
-          <div className="space-y-4">
-            {/* Banner Preview */}
-            <div className="relative aspect-[3/1] w-full rounded-xl overflow-hidden bg-zinc-100 border border-zinc-200">
-              <img
-                src={activeSponsorship.bannerImageUrl}
-                alt={activeSponsorship.brandName}
-                className="w-full h-full object-cover"
-              />
-            </div>
-
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-4 rounded-xl bg-zinc-50 border border-zinc-200/60">
-              <div className="space-y-1">
-                <div className="text-sm font-bold text-zinc-900">
-                  {activeSponsorship.brandName}
-                </div>
-                <div className="text-xs text-zinc-500 flex flex-wrap gap-x-3 gap-y-1">
-                  <span>Buyer: {activeSponsorship.buyerName} ({activeSponsorship.buyerEmail})</span>
-                  <span>•</span>
-                  <span>Amount: ${activeSponsorship.amountPaid}</span>
-                  <span>•</span>
-                  <span>Ends: {new Date(activeSponsorship.endDate).toLocaleDateString()}</span>
-                </div>
-              </div>
-
-              <button
-                onClick={() => downloadBanner(activeSponsorship.bannerImageUrl, activeSponsorship.brandName)}
-                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-zinc-900 hover:bg-zinc-800 text-white text-xs font-semibold transition-colors shadow-2xs whitespace-nowrap"
-              >
-                <Download className="w-3.5 h-3.5" />
-                <span>Download Banner (1500×500)</span>
-              </button>
-            </div>
-          </div>
-        ) : (
-          <div className="p-8 text-center bg-zinc-50 rounded-xl border border-dashed border-zinc-200 space-y-2">
-            <Calendar className="w-8 h-8 text-zinc-400 mx-auto" />
-            <div className="text-xs font-semibold text-zinc-700">No active sponsor right now</div>
-            <p className="text-xs text-zinc-500 max-w-sm mx-auto">
-              Share your storefront link on Twitter to attract advertisers to your profile!
-            </p>
-            <button
-              onClick={copyStorefrontLink}
-              className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-white border border-zinc-200 text-xs font-medium text-zinc-800 hover:bg-zinc-100 transition-colors shadow-2xs mt-2"
-            >
-              <Share2 className="w-3.5 h-3.5" />
-              <span>Share Storefront</span>
-            </button>
-          </div>
-        )}
-      </section>
-
       {/* Pricing & Listing Settings Form */}
       <section className="bg-white rounded-2xl border border-zinc-200/80 p-6 sm:p-7 shadow-xs space-y-5">
-        <div>
-          <h2 className="text-base font-bold text-zinc-900">
-            Marketplace Settings
-          </h2>
-          <p className="text-xs text-zinc-500">
-            Control your weekly pricing and listing status on twitterbanner.lol.
-          </p>
+        <div className="flex items-start justify-between">
+          <div>
+            <h2 className="text-base font-bold text-zinc-900">
+              Weekly Pricing & Marketplace Settings
+            </h2>
+            <p className="text-xs text-zinc-500">
+              Set your weekly rate ($/week) and control your public visibility on twitterbanner.lol.
+            </p>
+          </div>
+          <span className="px-2.5 py-1 rounded-lg bg-zinc-100 text-zinc-700 text-xs font-bold">
+            ${savedPrice}/week
+          </span>
         </div>
 
         {saveSuccess && (
           <div className="p-3 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-medium flex items-center gap-1.5">
             <Check className="w-4 h-4 text-emerald-600" />
-            <span>Settings saved successfully!</span>
+            <span>Price and settings updated successfully!</span>
           </div>
         )}
 
@@ -371,13 +312,89 @@ export default function CreatorDashboardView({
             <button
               type="submit"
               disabled={isSaving}
-              className="inline-flex items-center gap-1.5 px-5 py-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-white text-xs font-bold transition-all shadow-2xs disabled:opacity-50"
+              className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-white text-xs font-bold transition-all shadow-2xs disabled:opacity-50"
             >
               <Save className="w-3.5 h-3.5" />
-              <span>{isSaving ? "Saving..." : "Save Settings"}</span>
+              <span>{isSaving ? "Saving..." : "Save Settings & Price"}</span>
             </button>
           </div>
         </form>
+      </section>
+
+      {/* Active Sponsor Fulfillment Section */}
+      <section className="bg-white rounded-2xl border border-zinc-200/80 p-6 sm:p-7 shadow-xs space-y-4">
+        <div className="flex items-center justify-between pb-3 border-b border-zinc-100">
+          <div>
+            <h2 className="text-base font-bold text-zinc-900">
+              Current Live Sponsor Banner
+            </h2>
+            <p className="text-xs text-zinc-500">
+              Download the 1500×500 graphic and upload it to your X header.
+            </p>
+          </div>
+
+          {activeSponsorship ? (
+            <span className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-bold">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              Active Now
+            </span>
+          ) : (
+            <span className="px-3 py-1 rounded-full bg-zinc-100 text-zinc-500 text-xs font-medium">
+              No Active Sponsor
+            </span>
+          )}
+        </div>
+
+        {activeSponsorship ? (
+          <div className="space-y-4">
+            {/* Banner Preview */}
+            <div className="relative aspect-[3/1] w-full rounded-xl overflow-hidden bg-zinc-100 border border-zinc-200">
+              <img
+                src={activeSponsorship.bannerImageUrl}
+                alt={activeSponsorship.brandName}
+                className="w-full h-full object-cover"
+              />
+            </div>
+
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-4 rounded-xl bg-zinc-50 border border-zinc-200/60">
+              <div className="space-y-1">
+                <div className="text-sm font-bold text-zinc-900">
+                  {activeSponsorship.brandName}
+                </div>
+                <div className="text-xs text-zinc-500 flex flex-wrap gap-x-3 gap-y-1">
+                  <span>Buyer: {activeSponsorship.buyerName} ({activeSponsorship.buyerEmail})</span>
+                  <span>•</span>
+                  <span>Amount: ${activeSponsorship.amountPaid}</span>
+                  <span>•</span>
+                  <span>Ends: {new Date(activeSponsorship.endDate).toLocaleDateString()}</span>
+                </div>
+              </div>
+
+              <button
+                onClick={() => downloadBanner(activeSponsorship.bannerImageUrl, activeSponsorship.brandName)}
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-zinc-900 hover:bg-zinc-800 text-white text-xs font-semibold transition-colors shadow-2xs whitespace-nowrap"
+              >
+                <Download className="w-3.5 h-3.5" />
+                <span>Download Banner (1500×500)</span>
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div className="p-8 text-center bg-zinc-50 rounded-xl border border-dashed border-zinc-200 space-y-2">
+            <Calendar className="w-8 h-8 text-zinc-400 mx-auto" />
+            <div className="text-xs font-semibold text-zinc-700">No active sponsor right now</div>
+            <p className="text-xs text-zinc-500 max-w-sm mx-auto">
+              Share your storefront link on Twitter to attract advertisers to your profile!
+            </p>
+            <button
+              onClick={copyStorefrontLink}
+              className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-white border border-zinc-200 text-xs font-medium text-zinc-800 hover:bg-zinc-100 transition-colors shadow-2xs mt-2"
+            >
+              <Share2 className="w-3.5 h-3.5" />
+              <span>Share Storefront</span>
+            </button>
+          </div>
+        )}
       </section>
 
       {/* Sponsorship Orders History Table */}

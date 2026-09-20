@@ -126,12 +126,12 @@ export default function Post() {
             Sign in with Twitter, set your price, and start accepting brand sponsorships today.
           </p>
           <div className="flex flex-wrap gap-3">
-            <a
-              href="/api/auth/twitter/login"
+            <Link
+              href="/login"
               className="px-5 py-2.5 rounded-xl bg-white text-zinc-900 text-xs font-bold hover:bg-zinc-100 transition-colors shadow-2xs"
             >
               Connect Twitter & List Banner
-            </a>
+            </Link>
             <Link
               href="/"
               className="px-5 py-2.5 rounded-xl bg-zinc-800 text-white text-xs font-bold hover:bg-zinc-700 transition-colors"
