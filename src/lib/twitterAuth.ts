@@ -130,39 +130,59 @@ export async function upsertTwitterUser(twitterData: any) {
   const followersCount = twitterData.public_metrics?.followers_count ?? 0;
   const followingCount = twitterData.public_metrics?.following_count ?? 0;
 
-  const existing = await prisma.user.findUnique({
+  const profile = {
+    name: twitterData.name,
+    avatarUrl,
+    bio: twitterData.description || null,
+    location: twitterData.location || null,
+    followersCount,
+    followingCount,
+    isVerified: Boolean(twitterData.verified),
+  };
+
+  // 1. Returning creator: match on the real Twitter ID.
+  const byTwitterId = await prisma.user.findUnique({
     where: { twitterId: twitterData.id },
   });
+  if (byTwitterId) {
+    return prisma.user.update({
+      where: { id: byTwitterId.id },
+      data: {
+        username,
+        ...profile,
+        ...(byTwitterId.removedAt ? { isListingActive: false } : {}),
+      },
+    });
+  }
 
-  const user = await prisma.user.upsert({
-    where: { twitterId: twitterData.id },
-    update: {
-      username,
-      name: twitterData.name,
-      avatarUrl,
-      bio: twitterData.description || null,
-      location: twitterData.location || null,
-      followersCount,
-      followingCount,
-      isVerified: Boolean(twitterData.verified),
-      ...(existing?.removedAt ? { isListingActive: false } : {}),
-    },
-    create: {
+  // 2. Claim a pre-seeded listing that already owns this username but was
+  //    created with a placeholder Twitter ID (e.g. prisma/seed.ts). Without
+  //    this, the create() below hits the unique username constraint, throws,
+  //    and the OAuth callback bounces the user back to the homepage.
+  const byUsername = await prisma.user.findUnique({
+    where: { username },
+  });
+  if (byUsername) {
+    return prisma.user.update({
+      where: { id: byUsername.id },
+      data: {
+        twitterId: twitterData.id,
+        ...profile,
+        ...(byUsername.removedAt ? { isListingActive: false } : {}),
+      },
+    });
+  }
+
+  // 3. Brand-new creator.
+  return prisma.user.create({
+    data: {
       twitterId: twitterData.id,
       username,
-      name: twitterData.name,
-      avatarUrl,
-      bio: twitterData.description || null,
-      location: twitterData.location || null,
-      followersCount,
-      followingCount,
-      isVerified: Boolean(twitterData.verified),
+      ...profile,
       weeklyPrice: followersCount > 10000 ? 99.0 : 39.0,
       isListingActive: true,
       category: "Tech & Dev",
       defaultBannerUrl: "/banner.png",
     },
   });
-
-  return user;
 }
