@@ -1,6 +1,7 @@
 import React from "react";
 import { Metadata } from "next";
 import Link from "next/link";
+import { OG_IMAGE_META } from "@/lib/site";
 
 export const metadata: Metadata = {
   title: "BannerMRR vs twitterbanner.lol: Comparison for Creators & Brands",
@@ -14,11 +15,13 @@ export const metadata: Metadata = {
     publishedTime: "2026-09-20T00:00:00Z",
     authors: ["@iaadi8"],
     url: "https://www.twitterbanner.lol/blog/bannermrr-vs-twitterbanner",
+    images: [OG_IMAGE_META],
   },
   twitter: {
     card: "summary_large_image",
     title: "BannerMRR vs twitterbanner.lol: Comparison for Creators & Brands",
     description: "Comparing BannerMRR and twitterbanner.lol for Twitter/X header sponsorships.",
+    images: [OG_IMAGE_META],
   },
 };
 

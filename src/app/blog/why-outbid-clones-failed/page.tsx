@@ -1,6 +1,7 @@
 import React from "react";
 import { Metadata } from "next";
 import Link from "next/link";
+import { OG_IMAGE_META } from "@/lib/site";
 
 export const metadata: Metadata = {
   title: "Why 99% of outbid.lol Clones Failed (And What Actually Works)",
@@ -14,11 +15,13 @@ export const metadata: Metadata = {
     publishedTime: "2026-09-18T00:00:00Z",
     authors: ["@iaadi8"],
     url: "https://www.twitterbanner.lol/blog/why-outbid-clones-failed",
+    images: [OG_IMAGE_META],
   },
   twitter: {
     card: "summary_large_image",
     title: "Why 99% of outbid.lol Clones Failed (And What Actually Works)",
     description: "170+ outbid clones launched within 2 weeks. Almost all of them are dead.",
+    images: [OG_IMAGE_META],
   },
 };
 

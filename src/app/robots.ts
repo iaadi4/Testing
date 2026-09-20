@@ -10,6 +10,8 @@ export default function robots(): MetadataRoute.Robots {
         disallow: ["/admin", "/api/", "/sponsor/success", "/login", "/dashboard"],
       },
       { userAgent: "Googlebot", allow: "/" },
+      { userAgent: "Twitterbot", allow: "/" },
+      { userAgent: "facebookexternalhit", allow: "/" },
       { userAgent: "OAI-SearchBot", allow: "/" },
       { userAgent: "PerplexityBot", allow: "/" },
       { userAgent: "Claude-SearchBot", allow: "/" },

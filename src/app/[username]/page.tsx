@@ -5,7 +5,7 @@ import { getCreatorProfile } from "@/lib/marketplace";
 import CreatorBookingView from "@/components/CreatorBookingView";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
-import { RESERVED_ROUTES, SITE_URL } from "@/lib/site";
+import { OG_IMAGE_META, RESERVED_ROUTES, SITE_URL } from "@/lib/site";
 import { jsonLdScript } from "@/lib/jsonld";
 
 export const revalidate = 60;
@@ -33,11 +33,13 @@ export async function generateMetadata({ params }: CreatorPageProps): Promise<Me
       description: `Direct 1500×500 profile visibility to ${creator.followersCount.toLocaleString()} followers.`,
       url: `${SITE_URL}/${creator.username}`,
       type: "website",
+      images: [OG_IMAGE_META],
     },
     twitter: {
       card: "summary_large_image",
       title: `Rent @${creator.username}'s Twitter Banner ($${creator.weeklyPrice}/wk)`,
       description: `Direct 1500×500 profile sponsorship to ${creator.followersCount.toLocaleString()} followers.`,
+      images: [OG_IMAGE_META],
     },
   };
 }

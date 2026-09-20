@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { SITE_URL } from "@/lib/site";
+import { OG_IMAGE, SITE_URL } from "@/lib/site";
 import { jsonLdScript, organizationLd } from "@/lib/jsonld";
 import type { BlogPost } from "@/lib/blog";
 
@@ -19,7 +19,7 @@ export function ArticleLayout({
     datePublished: `${post.dateIso}T00:00:00Z`,
     dateModified: `${post.dateIso}T00:00:00Z`,
     url,
-    image: `${url}/opengraph-image`,
+    image: OG_IMAGE,
     author: { "@type": "Person", name: "Aditya (@iaadi8)", url: "https://x.com/iaadi8" },
     publisher: organizationLd,
     mainEntityOfPage: url,

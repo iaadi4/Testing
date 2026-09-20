@@ -6,6 +6,16 @@ export const APEX_HOST = "twitterbanner.lol";
 export const SITE_DESCRIPTION =
   "The two-sided marketplace to rent Twitter/X profile banner real estate from verified high-reach creators. Set your weekly rate, get sponsored, or advertise directly on X.";
 
+export const OG_IMAGE_PATH = "/og-image.png";
+export const OG_IMAGE = `${SITE_URL}${OG_IMAGE_PATH}`;
+export const OG_IMAGE_META = {
+  url: OG_IMAGE_PATH,
+  width: 1200,
+  height: 630,
+  alt: "twitterbanner.lol — rent Twitter banners from high-reach creators",
+  type: "image/png",
+};
+
 export function getSiteUrl() {
   return (
     process.env.NEXT_PUBLIC_APP_URL ||
@@ -25,11 +35,15 @@ export function pageMeta(title: string, description: string, path: string) {
       description,
       url,
       type: "website" as const,
+      images: [OG_IMAGE_META],
     },
     twitter: {
       card: "summary_large_image" as const,
       title,
       description,
+      creator: "@iaadi8",
+      site: "@iaadi8",
+      images: [OG_IMAGE_META],
     },
   };
 }

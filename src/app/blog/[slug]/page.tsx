@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { DYNAMIC_POSTS, getPost } from "@/lib/blog";
 import { ArticleLayout } from "@/components/ArticleLayout";
-import { SITE_URL } from "@/lib/site";
+import { OG_IMAGE_META, SITE_URL } from "@/lib/site";
 
 export function generateStaticParams() {
   return DYNAMIC_POSTS.map((p) => ({ slug: p.slug }));
@@ -23,11 +23,13 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
       type: "article",
       publishedTime: `${post.dateIso}T00:00:00Z`,
       url: `${SITE_URL}/blog/${post.slug}`,
+      images: [OG_IMAGE_META],
     },
     twitter: {
       card: "summary_large_image",
       title: post.title,
       description: post.description,
+      images: [OG_IMAGE_META],
     },
   };
 }

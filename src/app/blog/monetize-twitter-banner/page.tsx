@@ -1,6 +1,7 @@
 import React from "react";
 import { Metadata } from "next";
 import Link from "next/link";
+import { OG_IMAGE_META } from "@/lib/site";
 
 export const metadata: Metadata = {
   title: "How to Monetize Your Twitter/X Banner: The Complete Guide (2026)",
@@ -14,11 +15,13 @@ export const metadata: Metadata = {
     publishedTime: "2026-09-20T00:00:00Z",
     authors: ["@iaadi8"],
     url: "https://www.twitterbanner.lol/blog/monetize-twitter-banner",
+    images: [OG_IMAGE_META],
   },
   twitter: {
     card: "summary_large_image",
     title: "How to Monetize Your Twitter/X Banner: The Complete Guide",
     description: "Learn how to turn your Twitter profile header into weekly passive income.",
+    images: [OG_IMAGE_META],
   },
 };
 

@@ -1,6 +1,7 @@
 import React from "react";
 import { Metadata } from "next";
 import Link from "next/link";
+import { OG_IMAGE_META } from "@/lib/site";
 
 export const metadata: Metadata = {
   title: "The outbid.lol Phenomenon: How a 3-Hour Side Project Made $200K+",
@@ -14,11 +15,13 @@ export const metadata: Metadata = {
     publishedTime: "2026-09-15T00:00:00Z",
     authors: ["@iaadi8"],
     url: "https://www.twitterbanner.lol/blog/outbid-lol-phenomenon",
+    images: [OG_IMAGE_META],
   },
   twitter: {
     card: "summary_large_image",
     title: "The outbid.lol Phenomenon: How a 3-Hour Side Project Made $200K+",
     description: "In August 2026, Jonathan Wilke built a pay-to-rank public leaderboard in 3 hours that made $200,000+ in under a week.",
+    images: [OG_IMAGE_META],
   },
 };
 

@@ -3,7 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import { Analytics } from "@vercel/analytics/react";
 import { headers } from "next/headers";
 import "./globals.css";
-import { SITE_DESCRIPTION, SITE_NAME, SITE_URL } from "@/lib/site";
+import { OG_IMAGE_META, SITE_DESCRIPTION, SITE_NAME, SITE_URL } from "@/lib/site";
 import { jsonLdScript, organizationLd, webAppLd, websiteLd } from "@/lib/jsonld";
 
 const geistSans = Geist({
@@ -60,6 +60,7 @@ export const metadata: Metadata = {
     siteName: SITE_NAME,
     locale: "en_US",
     type: "website",
+    images: [OG_IMAGE_META],
   },
   twitter: {
     card: "summary_large_image",
@@ -67,6 +68,7 @@ export const metadata: Metadata = {
     description: SITE_DESCRIPTION,
     creator: "@iaadi8",
     site: "@iaadi8",
+    images: [OG_IMAGE_META],
   },
   verification: {
     google: process.env.NEXT_PUBLIC_GSC_VERIFICATION,

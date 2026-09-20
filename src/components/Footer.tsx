@@ -53,6 +53,9 @@ export function Footer() {
             <a href="https://buildrship.xyz/products/twitterbanner-lol" target="_blank" rel="noopener noreferrer">
               <img src="https://buildrship.xyz/assets/featured-on-buildrship.png" alt="Featured on Buildrship" width="130" height="46" />
             </a>
+            <a href="https://www.producthunt.com/products/twitterbanner-lol?launch=twitterbanner-lol" target="_blank" rel="noopener noreferrer">
+              <img src="/producthunt-badge.svg" alt="Featured on Product Hunt" width="220" height="48" loading="lazy" />
+            </a>
           </div>
         </div>
       </div>
