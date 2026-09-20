@@ -5,16 +5,14 @@ import {
   generatePKCE,
   getTwitterAuthorizationUrl,
 } from "@/lib/twitterAuth";
+import { getSiteUrl } from "@/lib/site";
 
 export async function GET(req: NextRequest) {
-  const appUrl =
-    process.env.APP_URL ||
-    process.env.NEXT_PUBLIC_APP_URL ||
-    req.nextUrl.origin;
+  const appUrl = getSiteUrl() || req.nextUrl.origin;
 
   const redirectUri = `${appUrl}/api/auth/twitter/callback`;
 
-  if (!isTwitterConfigured) {
+  if (!isTwitterConfigured()) {
     return NextResponse.redirect(
       new URL("/?error=twitter_oauth_not_configured", req.url)
     );

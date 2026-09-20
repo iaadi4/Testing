@@ -6,6 +6,7 @@ import {
   upsertTwitterUser,
 } from "@/lib/twitterAuth";
 import { createSessionToken, SESSION_COOKIE_NAME } from "@/lib/auth";
+import { getSiteUrl } from "@/lib/site";
 
 export async function GET(req: NextRequest) {
   const searchParams = req.nextUrl.searchParams;
@@ -32,10 +33,7 @@ export async function GET(req: NextRequest) {
   }
 
   try {
-    const appUrl =
-      process.env.APP_URL ||
-      process.env.NEXT_PUBLIC_APP_URL ||
-      req.nextUrl.origin;
+    const appUrl = getSiteUrl() || req.nextUrl.origin;
 
     const redirectUri = `${appUrl}/api/auth/twitter/callback`;
 

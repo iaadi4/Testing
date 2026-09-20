@@ -1,14 +1,26 @@
 import crypto from "crypto";
 import { prisma } from "@/lib/db";
 
-const TWITTER_CLIENT_ID = process.env.TWITTER_CLIENT_ID;
-const TWITTER_CLIENT_SECRET = process.env.TWITTER_CLIENT_SECRET;
+function readTwitterClientId() {
+  return process.env.TWITTER_CLIENT_ID?.trim() || "";
+}
 
-export const isTwitterConfigured = Boolean(
-  TWITTER_CLIENT_ID &&
-  TWITTER_CLIENT_ID.trim() !== "" &&
-  !TWITTER_CLIENT_ID.includes("your_")
-);
+function readTwitterClientSecret() {
+  return process.env.TWITTER_CLIENT_SECRET?.trim() || "";
+}
+
+export function isTwitterConfigured() {
+  const id = readTwitterClientId();
+  return Boolean(id && !id.includes("your_"));
+}
+
+function getTwitterClientId() {
+  return readTwitterClientId();
+}
+
+function getTwitterClientSecret() {
+  return readTwitterClientSecret();
+}
 
 // Base64-URL encode a buffer
 function base64URLEncode(buffer: Buffer): string {
@@ -35,12 +47,12 @@ export function getTwitterAuthorizationUrl(params: {
 }): string {
   const url = new URL("https://twitter.com/i/oauth2/authorize");
   url.searchParams.set("response_type", "code");
-  url.searchParams.set("client_id", TWITTER_CLIENT_ID || "");
+  url.searchParams.set("client_id", getTwitterClientId());
   url.searchParams.set("redirect_uri", params.redirectUri);
   url.searchParams.set("scope", "users.read tweet.read offline.access");
   url.searchParams.set("state", params.state);
   url.searchParams.set("code_challenge", params.codeChallenge);
-  url.searchParams.set("code_challenge_method", "s256");
+  url.searchParams.set("code_challenge_method", "S256");
   return url.toString();
 }
 
@@ -53,7 +65,7 @@ export async function exchangeTwitterCode(params: {
   const body = new URLSearchParams({
     code: params.code,
     grant_type: "authorization_code",
-    client_id: TWITTER_CLIENT_ID!,
+    client_id: getTwitterClientId(),
     redirect_uri: params.redirectUri,
     code_verifier: params.codeVerifier,
   });
@@ -62,9 +74,10 @@ export async function exchangeTwitterCode(params: {
     "Content-Type": "application/x-www-form-urlencoded",
   };
 
-  if (TWITTER_CLIENT_SECRET) {
+  const clientSecret = getTwitterClientSecret();
+  if (clientSecret) {
     const basicAuth = Buffer.from(
-      `${TWITTER_CLIENT_ID}:${TWITTER_CLIENT_SECRET}`
+      `${getTwitterClientId()}:${clientSecret}`
     ).toString("base64");
     headers["Authorization"] = `Basic ${basicAuth}`;
   }
