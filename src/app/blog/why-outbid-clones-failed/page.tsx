@@ -6,12 +6,19 @@ export const metadata: Metadata = {
   title: "Why 99% of outbid.lol Clones Failed (And What Actually Works)",
   description: "Over 170 outbid.lol clones launched within two weeks, and almost every single one died. Here is an analysis of the Empty Carousel Problem and how creator marketplaces fix the flaw.",
   keywords: "outbid lol clone, outbid clone github, pay to dethrone, king of the hill advertising, creator marketplace, twitter banner ads",
+  alternates: { canonical: "/blog/why-outbid-clones-failed" },
   openGraph: {
     title: "Why 99% of outbid.lol Clones Failed (And What Actually Works)",
     description: "170+ outbid clones launched within 2 weeks. Almost all of them are dead. Here is the fatal flaw they all shared.",
     type: "article",
     publishedTime: "2026-09-18T00:00:00Z",
     authors: ["@iaadi8"],
+    url: "https://www.twitterbanner.lol/blog/why-outbid-clones-failed",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Why 99% of outbid.lol Clones Failed (And What Actually Works)",
+    description: "170+ outbid clones launched within 2 weeks. Almost all of them are dead.",
   },
 };
 
@@ -146,10 +153,10 @@ export default function Post() {
               Explore Creators
             </Link>
             <Link
-              href="/dashboard"
+              href="/login"
               className="px-4 py-2 rounded-lg bg-zinc-800 text-white text-xs font-bold hover:bg-zinc-700 transition-colors"
             >
-              Creator Dashboard
+              List your banner
             </Link>
           </div>
         </div>

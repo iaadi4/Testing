@@ -6,12 +6,19 @@ export const metadata: Metadata = {
   title: "The outbid.lol Phenomenon: How a 3-Hour Side Project Made $200K+",
   description: "In August 2026, Jonathan Wilke built a pay-to-rank public leaderboard in 3 hours that made $200,000+ in under a week. Here's a breakdown of the mechanics and how it inspired the Twitter banner marketplace.",
   keywords: "outbid lol, outbid.lol, outbid lol revenue, what is outbid lol, jonathan wilke outbid, pay to rank leaderboard, twitter banner marketplace",
+  alternates: { canonical: "/blog/outbid-lol-phenomenon" },
   openGraph: {
     title: "The outbid.lol Phenomenon: How a 3-Hour Side Project Made $200K+",
     description: "In August 2026, Jonathan Wilke built a pay-to-rank public leaderboard in 3 hours that made $200,000+ in under a week.",
     type: "article",
     publishedTime: "2026-09-15T00:00:00Z",
     authors: ["@iaadi8"],
+    url: "https://www.twitterbanner.lol/blog/outbid-lol-phenomenon",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "The outbid.lol Phenomenon: How a 3-Hour Side Project Made $200K+",
+    description: "In August 2026, Jonathan Wilke built a pay-to-rank public leaderboard in 3 hours that made $200,000+ in under a week.",
   },
 };
 
@@ -123,7 +130,7 @@ export default function Post() {
               Browse Creators
             </Link>
             <Link
-              href="/dashboard"
+              href="/login"
               className="px-4 py-2 rounded-lg bg-zinc-800 text-white text-xs font-bold hover:bg-zinc-700 transition-colors"
             >
               List Your Banner

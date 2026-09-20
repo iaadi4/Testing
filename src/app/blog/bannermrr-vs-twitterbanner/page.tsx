@@ -6,12 +6,19 @@ export const metadata: Metadata = {
   title: "BannerMRR vs twitterbanner.lol: Comparison for Creators & Brands",
   description: "Comparing BannerMRR and twitterbanner.lol for Twitter/X header sponsorships. Explore pricing models, booking durations, fees, and creator controls.",
   keywords: "bannermrr alternative, subheaderx alternative, twitter banner marketplace, sell twitter banner space, monetize twitter banner",
+  alternates: { canonical: "/blog/bannermrr-vs-twitterbanner" },
   openGraph: {
     title: "BannerMRR vs twitterbanner.lol: Comparison for Creators & Brands",
     description: "Comparing BannerMRR and twitterbanner.lol for Twitter/X header sponsorships. Explore pricing models, durations, and creator controls.",
     type: "article",
     publishedTime: "2026-09-20T00:00:00Z",
     authors: ["@iaadi8"],
+    url: "https://www.twitterbanner.lol/blog/bannermrr-vs-twitterbanner",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "BannerMRR vs twitterbanner.lol: Comparison for Creators & Brands",
+    description: "Comparing BannerMRR and twitterbanner.lol for Twitter/X header sponsorships.",
   },
 };
 
@@ -134,7 +141,7 @@ export default function Post() {
               Browse Creators
             </Link>
             <Link
-              href="/dashboard"
+              href="/login"
               className="px-4 py-2 rounded-lg bg-zinc-800 text-white text-xs font-bold hover:bg-zinc-700 transition-colors"
             >
               Start Monetizing
