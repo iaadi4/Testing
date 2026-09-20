@@ -1,4 +1,6 @@
+import { after } from "next/server";
 import { prisma } from "@/lib/db";
+import { PAID_STATUSES } from "@/lib/site";
 
 export interface GetMarketplaceOptions {
   category?: string;
@@ -7,19 +9,30 @@ export interface GetMarketplaceOptions {
   recordVisit?: boolean;
 }
 
+const liveCreatorWhere = {
+  isListingActive: true,
+  removedAt: null,
+};
+
+function bannerPath(sponsorshipId?: string | null) {
+  return sponsorshipId ? `/api/banner/${sponsorshipId}` : "/banner.png";
+}
+
 export async function getMarketplaceData(options: GetMarketplaceOptions = {}) {
   const { category, search, sortBy = "followers", recordVisit = false } = options;
 
   if (recordVisit) {
-    await prisma.siteSetting.update({
-      where: { id: "default" },
-      data: { totalVisits: { increment: 1 } },
-    }).catch(() => {});
+    after(async () => {
+      await prisma.siteSetting
+        .update({
+          where: { id: "default" },
+          data: { totalVisits: { increment: 1 } },
+        })
+        .catch(() => {});
+    });
   }
 
-  const where: any = {
-    isListingActive: true,
-  };
+  const where: Record<string, unknown> = { ...liveCreatorWhere };
 
   if (category && category !== "All") {
     where.category = category;
@@ -34,65 +47,88 @@ export async function getMarketplaceData(options: GetMarketplaceOptions = {}) {
     ];
   }
 
-  let orderBy: any = [{ followersCount: "desc" }];
-  if (sortBy === "price_asc") {
-    orderBy = [{ weeklyPrice: "asc" }];
-  } else if (sortBy === "price_desc") {
-    orderBy = [{ weeklyPrice: "desc" }];
-  } else if (sortBy === "newest") {
-    orderBy = [{ createdAt: "desc" }];
-  }
+  let orderBy: Record<string, "asc" | "desc">[] = [{ followersCount: "desc" }];
+  if (sortBy === "price_asc") orderBy = [{ weeklyPrice: "asc" }];
+  else if (sortBy === "price_desc") orderBy = [{ weeklyPrice: "desc" }];
+  else if (sortBy === "newest") orderBy = [{ createdAt: "desc" }];
 
-  const creators = await prisma.user.findMany({
-    where,
-    orderBy,
-    include: {
-      sponsorships: {
-        where: {
-          status: "ACTIVE",
-          endDate: { gte: new Date() },
+  const [creators, totalCreators, totalReachAggregate, totalBookingsAggregate, settings] =
+    await Promise.all([
+      prisma.user.findMany({
+        where,
+        orderBy,
+        select: {
+          id: true,
+          username: true,
+          name: true,
+          avatarUrl: true,
+          bio: true,
+          location: true,
+          website: true,
+          followersCount: true,
+          followingCount: true,
+          isVerified: true,
+          weeklyPrice: true,
+          isListingActive: true,
+          category: true,
+          defaultBannerUrl: true,
+          sponsorships: {
+            where: {
+              status: "ACTIVE",
+              endDate: { gte: new Date() },
+            },
+            orderBy: { createdAt: "desc" },
+            take: 1,
+            select: {
+              id: true,
+              brandName: true,
+              brandUrl: true,
+            },
+          },
         },
-        orderBy: { createdAt: "desc" },
-        take: 1,
-      },
-    },
-  });
-
-  // Calculate real platform metrics directly from Neon PostgreSQL
-  const totalCreators = await prisma.user.count({ where: { isListingActive: true } });
-  const totalReachAggregate = await prisma.user.aggregate({
-    where: { isListingActive: true },
-    _sum: { followersCount: true },
-  });
-
-  const totalBookingsAggregate = await prisma.sponsorship.aggregate({
-    where: { status: { in: ["ACTIVE", "COMPLETED"] } },
-    _sum: { amountPaid: true, clicksCount: true },
-    _count: { id: true },
-  });
-
-  const settings = await prisma.siteSetting.findUnique({
-    where: { id: "default" },
-  });
+      }),
+      prisma.user.count({ where: liveCreatorWhere }),
+      prisma.user.aggregate({
+        where: liveCreatorWhere,
+        _sum: { followersCount: true },
+      }),
+      prisma.sponsorship.aggregate({
+        where: { status: { in: [...PAID_STATUSES] } },
+        _sum: { amountPaid: true, clicksCount: true },
+        _count: { id: true },
+      }),
+      prisma.siteSetting.findUnique({ where: { id: "default" } }),
+    ]);
 
   return {
-    creators: creators.map((c) => ({
-      id: c.id,
-      username: c.username,
-      name: c.name,
-      avatarUrl: c.avatarUrl,
-      bio: c.bio,
-      location: c.location,
-      website: c.website,
-      followersCount: c.followersCount,
-      followingCount: c.followingCount,
-      isVerified: c.isVerified,
-      weeklyPrice: c.weeklyPrice,
-      isListingActive: c.isListingActive,
-      category: c.category,
-      defaultBannerUrl: c.defaultBannerUrl,
-      activeSponsorship: c.sponsorships[0] || null,
-    })),
+    creators: creators.map((c) => {
+      const active = c.sponsorships[0] || null;
+      return {
+        id: c.id,
+        username: c.username,
+        name: c.name,
+        avatarUrl: c.avatarUrl,
+        bio: c.bio,
+        location: c.location,
+        website: c.website,
+        followersCount: c.followersCount,
+        followingCount: c.followingCount,
+        isVerified: c.isVerified,
+        weeklyPrice: c.weeklyPrice,
+        isListingActive: c.isListingActive,
+        category: c.category,
+        defaultBannerUrl: c.defaultBannerUrl,
+        bannerSrc: active ? bannerPath(active.id) : c.defaultBannerUrl || "/banner.png",
+        activeSponsorship: active
+          ? {
+              id: active.id,
+              brandName: active.brandName,
+              brandUrl: active.brandUrl,
+              hasBanner: true,
+            }
+          : null,
+      };
+    }),
     stats: {
       totalCreators,
       totalAudienceReach: totalReachAggregate._sum.followersCount || 0,
@@ -109,27 +145,54 @@ export async function getCreatorProfile(username: string) {
 
   const creator = await prisma.user.findUnique({
     where: { username: cleanUsername },
-    include: {
+    select: {
+      id: true,
+      username: true,
+      name: true,
+      avatarUrl: true,
+      bio: true,
+      location: true,
+      website: true,
+      followersCount: true,
+      followingCount: true,
+      isVerified: true,
+      weeklyPrice: true,
+      isListingActive: true,
+      category: true,
+      defaultBannerUrl: true,
+      removedAt: true,
       sponsorships: {
-        where: {
-          status: { in: ["ACTIVE", "COMPLETED"] },
-        },
+        where: { status: { in: ["ACTIVE", "COMPLETED"] } },
         orderBy: { createdAt: "desc" },
         take: 20,
+        select: {
+          id: true,
+          status: true,
+          brandName: true,
+          brandUrl: true,
+          tagline: true,
+          startDate: true,
+          endDate: true,
+          clicksCount: true,
+        },
       },
     },
   });
 
-  if (!creator) return null;
+  if (!creator || creator.removedAt) return null;
 
   const now = new Date();
   const activeSponsorship = creator.sponsorships.find(
     (s) => s.status === "ACTIVE" && s.endDate && s.endDate >= now
   );
 
-  const pastSponsorships = creator.sponsorships.filter(
-    (s) => s.id !== activeSponsorship?.id
-  );
+  const pastSponsorships = creator.sponsorships
+    .filter((s) => s.id !== activeSponsorship?.id)
+    .map((s) => ({
+      ...s,
+      hasBanner: true,
+      bannerSrc: bannerPath(s.id),
+    }));
 
   return {
     creator: {
@@ -148,7 +211,14 @@ export async function getCreatorProfile(username: string) {
       category: creator.category,
       defaultBannerUrl: creator.defaultBannerUrl,
     },
-    activeSponsorship: activeSponsorship || null,
+    activeSponsorship: activeSponsorship
+      ? {
+          ...activeSponsorship,
+          hasBanner: true,
+          bannerSrc: bannerPath(activeSponsorship.id),
+        }
+      : null,
     pastSponsorships,
+    isThin: !creator.bio || !creator.isListingActive,
   };
 }

@@ -14,6 +14,7 @@ import {
   ArrowUpRight 
 } from "lucide-react";
 import TwitterProfile, { CreatorProfileData } from "@/components/TwitterProfile";
+import { compressBannerFile } from "@/lib/compressBanner";
 
 interface CreatorBookingViewProps {
   creator: CreatorProfileData;
@@ -34,6 +35,7 @@ export default function CreatorBookingView({
   const [brandUrl, setBrandUrl] = useState("");
   const [tagline, setTagline] = useState("");
   const [bannerPreview, setBannerPreview] = useState<string | null>(null);
+  const [bannerDataUrl, setBannerDataUrl] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
 
@@ -43,27 +45,17 @@ export default function CreatorBookingView({
   const weeklyPrice = creator.weeklyPrice || 49;
   const totalPrice = weeklyPrice * durationWeeks;
 
-  // Handle banner image file upload & preview
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-
-    if (!file.type.startsWith("image/")) {
-      setErrorMessage("Please upload a valid image file (PNG, JPG, WebP).");
-      return;
+    try {
+      setErrorMessage("");
+      const { dataUrl, previewUrl } = await compressBannerFile(file);
+      setBannerPreview(previewUrl);
+      setBannerDataUrl(dataUrl);
+    } catch (err) {
+      setErrorMessage(err instanceof Error ? err.message : "Could not process that image.");
     }
-
-    if (file.size > 5 * 1024 * 1024) {
-      setErrorMessage("Image file is too large. Maximum size is 5MB.");
-      return;
-    }
-
-    setErrorMessage("");
-    const reader = new FileReader();
-    reader.onload = (loadEvent) => {
-      setBannerPreview(loadEvent.target?.result as string);
-    };
-    reader.readAsDataURL(file);
   };
 
   const handleScrollToForm = () => {
@@ -74,7 +66,7 @@ export default function CreatorBookingView({
     e.preventDefault();
     setErrorMessage("");
 
-    if (!bannerPreview) {
+    if (!bannerDataUrl) {
       setErrorMessage("Please upload your 1500×500 banner image.");
       return;
     }
@@ -98,7 +90,7 @@ export default function CreatorBookingView({
           brandName: brandName.trim(),
           brandUrl: brandUrl.trim(),
           tagline: tagline.trim() || undefined,
-          bannerImageUrl: bannerPreview,
+          bannerImageUrl: bannerDataUrl,
           durationWeeks,
         }),
       });
@@ -137,20 +129,28 @@ export default function CreatorBookingView({
 
       {/* Twitter Profile Mockup with Live Banner Preview */}
       <section className="space-y-3">
-        <div className="flex items-center justify-between">
-          <h1 className="text-sm font-bold text-zinc-500 uppercase tracking-wider">
-            Creator Profile & Banner Preview
+        <div className="flex items-center justify-between gap-3">
+          <h1 className="text-xl sm:text-2xl font-extrabold tracking-tight text-zinc-900">
+            Rent @{creator.username}&apos;s Twitter banner
           </h1>
           {bannerPreview && (
             <button
               type="button"
-              onClick={() => setBannerPreview(null)}
+              onClick={() => {
+                setBannerPreview(null);
+                setBannerDataUrl(null);
+              }}
               className="text-xs text-rose-600 hover:underline font-medium"
             >
-              Reset to Current Banner
+              Reset preview
             </button>
           )}
         </div>
+        <ol className="flex flex-wrap gap-2 text-[11px] font-semibold text-zinc-500">
+          <li className="px-2 py-1 rounded-full bg-white border border-zinc-200">1. Upload</li>
+          <li className="px-2 py-1 rounded-full bg-white border border-zinc-200">2. Details</li>
+          <li className="px-2 py-1 rounded-full bg-white border border-zinc-200">3. Pay</li>
+        </ol>
 
         <TwitterProfile
           creator={creator}

@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import Image from "next/image";
 import { 
   MapPin, 
   Link as LinkIcon, 
@@ -42,9 +43,11 @@ export default function TwitterProfile({
 }: TwitterProfileProps) {
   const currentBanner =
     previewBannerUrl ||
+    activeSponsorship?.bannerSrc ||
     activeSponsorship?.bannerImageUrl ||
     creator.defaultBannerUrl ||
     "/banner.png";
+  const isRemoteBanner = currentBanner.startsWith("http") || currentBanner.startsWith("/");
 
   const handleBannerClick = () => {
     if (activeSponsorship?.id) {
@@ -62,14 +65,22 @@ export default function TwitterProfile({
         onClick={handleBannerClick}
         className="relative aspect-[3/1] w-full bg-zinc-100 cursor-pointer overflow-hidden group"
       >
-        <img
-          src={currentBanner}
-          alt={activeSponsorship ? `Banner by ${activeSponsorship.brandName}` : `${creator.name}'s Twitter Banner`}
-          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.01]"
-          onError={(e) => {
-            e.currentTarget.src = "/banner.png";
-          }}
-        />
+        {isRemoteBanner ? (
+          <Image
+            src={currentBanner}
+            alt={activeSponsorship ? `Banner by ${activeSponsorship.brandName}` : `${creator.name}'s Twitter Banner`}
+            fill
+            priority
+            sizes="(max-width: 768px) 100vw, 1024px"
+            className="object-cover transition-transform duration-500 group-hover:scale-[1.01]"
+          />
+        ) : (
+          <img
+            src={currentBanner}
+            alt={activeSponsorship ? `Banner by ${activeSponsorship.brandName}` : `${creator.name}'s Twitter Banner`}
+            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.01]"
+          />
+        )}
 
         {/* Status Pill on Banner */}
         <div className="absolute top-3 right-3 z-10">
@@ -97,13 +108,12 @@ export default function TwitterProfile({
         {/* Avatar + Action Row */}
         <div className="flex justify-between items-end -mt-10 sm:-mt-14 mb-4">
           <div className="relative">
-            <img
+            <Image
               src={creator.avatarUrl || "/avatar.png"}
               alt={creator.name}
+              width={112}
+              height={112}
               className="w-20 h-20 sm:w-28 sm:h-28 rounded-full border-4 border-white object-cover bg-zinc-100 shadow-xs"
-              onError={(e) => {
-                e.currentTarget.src = "/avatar.png";
-              }}
             />
           </div>
 

@@ -1,7 +1,9 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import Link from "next/link";
+import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { 
   Sparkles, 
   Search, 
@@ -31,6 +33,7 @@ interface Creator {
   isListingActive: boolean;
   category: string;
   defaultBannerUrl?: string;
+  bannerSrc?: string;
   activeSponsorship?: any | null;
 }
 
@@ -44,14 +47,33 @@ interface MarketplaceViewProps {
     totalClicks: number;
     totalVisits: number;
   };
+  initialSearch?: string;
+  initialCategory?: string;
+  initialSort?: "followers" | "price_asc" | "price_desc";
 }
 
 const CATEGORIES = ["All", "Tech & Dev", "AI & ML", "Indie Maker", "Crypto"];
 
-export default function MarketplaceView({ creators, stats }: MarketplaceViewProps) {
-  const [selectedCategory, setSelectedCategory] = useState("All");
-  const [searchQuery, setSearchQuery] = useState("");
-  const [sortBy, setSortBy] = useState<"followers" | "price_asc" | "price_desc">("followers");
+export default function MarketplaceView({
+  creators,
+  stats,
+  initialSearch = "",
+  initialCategory = "All",
+  initialSort = "followers",
+}: MarketplaceViewProps) {
+  const router = useRouter();
+  const [selectedCategory, setSelectedCategory] = useState(initialCategory || "All");
+  const [searchQuery, setSearchQuery] = useState(initialSearch);
+  const [sortBy, setSortBy] = useState<"followers" | "price_asc" | "price_desc">(initialSort);
+
+  useEffect(() => {
+    const params = new URLSearchParams();
+    if (searchQuery.trim()) params.set("search", searchQuery.trim());
+    if (selectedCategory !== "All") params.set("category", selectedCategory);
+    if (sortBy !== "followers") params.set("sort", sortBy);
+    const qs = params.toString();
+    router.replace(qs ? `/?${qs}` : "/", { scroll: false });
+  }, [searchQuery, selectedCategory, sortBy, router]);
 
   // Filter & sort logic
   const filteredCreators = useMemo(() => {
@@ -212,10 +234,10 @@ export default function MarketplaceView({ creators, stats }: MarketplaceViewProp
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            {filteredCreators.map((creator) => {
+            {filteredCreators.map((creator, index) => {
               const activeSponsorship = creator.activeSponsorship;
               const bannerSrc =
-                activeSponsorship?.bannerImageUrl ||
+                (creator as { bannerSrc?: string }).bannerSrc ||
                 creator.defaultBannerUrl ||
                 "/banner.png";
 
@@ -227,13 +249,14 @@ export default function MarketplaceView({ creators, stats }: MarketplaceViewProp
                   <div>
                     {/* Banner Thumbnail (3:1) */}
                     <div className="relative aspect-[3/1] w-full bg-zinc-100 overflow-hidden">
-                      <img
+                      <Image
                         src={bannerSrc}
                         alt={`${creator.name}'s banner`}
-                        className="w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-500"
-                        onError={(e) => {
-                          e.currentTarget.src = "/banner.png";
-                        }}
+                        fill
+                        priority={index < 3}
+                        loading={index < 3 ? "eager" : "lazy"}
+                        sizes="(max-width: 768px) 100vw, 50vw"
+                        className="object-cover group-hover:scale-[1.02] transition-transform duration-500"
                       />
 
                       {/* Status Tag */}
@@ -328,7 +351,7 @@ export default function MarketplaceView({ creators, stats }: MarketplaceViewProp
       </section>
 
       {/* How it Works Section */}
-      <section className="bg-white rounded-2xl border border-zinc-200/80 p-6 sm:p-8 space-y-6 shadow-xs">
+      <section id="how-it-works" className="bg-white rounded-2xl border border-zinc-200/80 p-6 sm:p-8 space-y-6 shadow-xs scroll-mt-20">
         <div className="text-center space-y-1">
           <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-zinc-900">
             How twitterbanner.lol Works
