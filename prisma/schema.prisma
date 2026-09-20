@@ -39,7 +39,7 @@ model SiteSetting {
   profileLocation     String   @default("India")
   profileWebsite      String   @default("adityacodes.site")
   followingCount      Int      @default(85)
-  followersCount      Int      @default(109)
+  followersCount      Int      @default(111)
   weekPrice           Float    @default(29.0)
   monthPrice          Float    @default(89.0)
   yearPrice           Float    @default(499.0)

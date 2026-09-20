@@ -16,7 +16,7 @@ export async function getArenaData(recordVisit: boolean = false) {
         profileLocation: "India",
         profileWebsite: "adityacodes.site",
         followingCount: 85,
-        followersCount: 109,
+        followersCount: 111,
         totalVisits: recordVisit ? 1 : 0,
         minOutbidIncrement: 1.0,
       },

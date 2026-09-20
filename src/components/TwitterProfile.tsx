@@ -16,6 +16,7 @@ interface TwitterProfileProps {
   currentPrice: number;
   minBidToDethrone: number;
   onOutbidClick: () => void;
+  settings?: any;
 }
 
 export default function TwitterProfile({
@@ -23,6 +24,7 @@ export default function TwitterProfile({
   currentPrice,
   minBidToDethrone,
   onOutbidClick,
+  settings,
 }: TwitterProfileProps) {
   const handleBannerClick = () => {
     if (activeSponsor) {
@@ -76,7 +78,7 @@ export default function TwitterProfile({
           {/* Avatar */}
           <div className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-full border-4 border-white bg-zinc-950 overflow-hidden shadow-xs">
             <Image
-              src="/avatar.png?v=4"
+              src="/avatar.png?v=5"
               alt="Aditya"
               fill
               unoptimized
@@ -141,11 +143,11 @@ export default function TwitterProfile({
 
           <div className="flex items-center gap-4 text-xs pt-1">
             <span>
-              <strong className="text-zinc-900 font-semibold">85</strong>{" "}
+              <strong className="text-zinc-900 font-semibold">{settings?.followingCount ?? 85}</strong>{" "}
               <span className="text-zinc-500">Following</span>
             </span>
             <span>
-              <strong className="text-zinc-900 font-semibold">109</strong>{" "}
+              <strong className="text-zinc-900 font-semibold">{settings?.followersCount ?? 111}</strong>{" "}
               <span className="text-zinc-500">Followers</span>
             </span>
           </div>

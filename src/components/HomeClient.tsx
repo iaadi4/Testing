@@ -92,6 +92,7 @@ export default function HomeClient({ initialData }: HomeClientProps) {
           currentPrice={currentPrice}
           minBidToDethrone={minBidToDethrone}
           onOutbidClick={() => setModalOpen(true)}
+          settings={data?.settings || initialData?.settings}
         />
 
         {/* History of Previous Bids (if any exist) */}
