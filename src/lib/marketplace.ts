@@ -4,10 +4,18 @@ export interface GetMarketplaceOptions {
   category?: string;
   search?: string;
   sortBy?: "followers" | "price_asc" | "price_desc" | "newest";
+  recordVisit?: boolean;
 }
 
 export async function getMarketplaceData(options: GetMarketplaceOptions = {}) {
-  const { category, search, sortBy = "followers" } = options;
+  const { category, search, sortBy = "followers", recordVisit = false } = options;
+
+  if (recordVisit) {
+    await prisma.siteSetting.update({
+      where: { id: "default" },
+      data: { totalVisits: { increment: 1 } },
+    }).catch(() => {});
+  }
 
   const where: any = {
     isListingActive: true,
@@ -18,10 +26,11 @@ export async function getMarketplaceData(options: GetMarketplaceOptions = {}) {
   }
 
   if (search && search.trim() !== "") {
+    const q = search.trim();
     where.OR = [
-      { username: { contains: search.trim().toLowerCase(), mode: "insensitive" } },
-      { name: { contains: search.trim(), mode: "insensitive" } },
-      { bio: { contains: search.trim(), mode: "insensitive" } },
+      { username: { contains: q.toLowerCase(), mode: "insensitive" } },
+      { name: { contains: q, mode: "insensitive" } },
+      { bio: { contains: q, mode: "insensitive" } },
     ];
   }
 
@@ -49,9 +58,10 @@ export async function getMarketplaceData(options: GetMarketplaceOptions = {}) {
     },
   });
 
-  // Calculate platform metrics
+  // Calculate real platform metrics directly from Neon PostgreSQL
   const totalCreators = await prisma.user.count({ where: { isListingActive: true } });
   const totalReachAggregate = await prisma.user.aggregate({
+    where: { isListingActive: true },
     _sum: { followersCount: true },
   });
 

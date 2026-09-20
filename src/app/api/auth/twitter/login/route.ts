@@ -14,14 +14,13 @@ export async function GET(req: NextRequest) {
 
   const redirectUri = `${appUrl}/api/auth/twitter/callback`;
 
-  // If Twitter is not configured or mock is requested, redirect to mock login selector
-  const urlParams = req.nextUrl.searchParams;
-  if (!isTwitterConfigured || urlParams.get("mock") === "true") {
-    const mockHandle = urlParams.get("handle") || "iaadi8";
-    return NextResponse.redirect(new URL(`/api/auth/mock-login?handle=${mockHandle}`, req.url));
+  if (!isTwitterConfigured) {
+    return NextResponse.redirect(
+      new URL("/?error=twitter_oauth_not_configured", req.url)
+    );
   }
 
-  // Production Twitter OAuth 2.0 PKCE
+  // Real Twitter OAuth 2.0 PKCE flow
   const state = crypto.randomBytes(16).toString("hex");
   const { codeVerifier, codeChallenge } = generatePKCE();
 

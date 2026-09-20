@@ -54,24 +54,9 @@ export default async function DashboardPage() {
               </div>
             </div>
 
-            <div className="pt-4 border-t border-zinc-100 text-left">
-              <div className="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider mb-2">
-                Quick Demo Login
-              </div>
-              <div className="flex flex-wrap gap-1.5">
-                <a
-                  href="/api/auth/mock-login?handle=iaadi8"
-                  className="px-2.5 py-1 rounded-md bg-zinc-100 hover:bg-zinc-200 text-zinc-700 text-xs font-medium transition-colors"
-                >
-                  Log in as @iaadi8
-                </a>
-                <a
-                  href="/api/auth/mock-login?handle=sarahbuilds"
-                  className="px-2.5 py-1 rounded-md bg-zinc-100 hover:bg-zinc-200 text-zinc-700 text-xs font-medium transition-colors"
-                >
-                  Log in as @sarahbuilds
-                </a>
-              </div>
+            <div className="pt-4 border-t border-zinc-100 flex items-center justify-center gap-2 text-xs text-zinc-500">
+              <ShieldCheck className="w-4 h-4 text-emerald-600" />
+              <span>Official Twitter OAuth 2.0 • Secure PKCE</span>
             </div>
 
           </div>

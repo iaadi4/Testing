@@ -64,7 +64,7 @@ export default function TwitterProfile({
       >
         <img
           src={currentBanner}
-          alt={activeSponsorship ? `Banner by ${activeSponsorship.brandName || activeSponsorship.companyName}` : `${creator.name}'s Twitter Banner`}
+          alt={activeSponsorship ? `Banner by ${activeSponsorship.brandName}` : `${creator.name}'s Twitter Banner`}
           className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.01]"
           onError={(e) => {
             e.currentTarget.src = "/banner.png";
@@ -79,7 +79,7 @@ export default function TwitterProfile({
             </div>
           ) : activeSponsorship ? (
             <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-black/80 hover:bg-black text-white text-xs font-medium backdrop-blur-md transition-colors border border-white/10 shadow-sm">
-              <span>Sponsored by {activeSponsorship.brandName || activeSponsorship.companyName}</span>
+              <span>Sponsored by {activeSponsorship.brandName}</span>
               <ArrowUpRight className="w-3.5 h-3.5 text-zinc-300" />
             </div>
           ) : (

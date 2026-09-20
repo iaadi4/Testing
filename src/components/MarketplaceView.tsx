@@ -94,8 +94,8 @@ export default function MarketplaceView({ creators, stats }: MarketplaceViewProp
       <section className="text-center space-y-5 pt-4 pb-2">
         <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white border border-zinc-200 text-xs text-zinc-600 shadow-2xs">
           <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-          <span className="font-semibold text-zinc-900">{stats.totalAudienceReach.toLocaleString()}+</span>
-          <span>combined creator impressions</span>
+          <span className="font-semibold text-zinc-900">{stats.totalAudienceReach.toLocaleString()}</span>
+          <span>verified creator reach</span>
         </div>
 
         <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-zinc-900 max-w-3xl mx-auto leading-[1.15]">
@@ -126,7 +126,7 @@ export default function MarketplaceView({ creators, stats }: MarketplaceViewProp
           </a>
         </div>
 
-        {/* Highlight Stats Row */}
+        {/* Real Analytics Stats Row */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 max-w-2xl mx-auto pt-6">
           <div className="p-3.5 rounded-xl bg-white border border-zinc-200/80 shadow-2xs">
             <div className="text-lg sm:text-xl font-bold text-zinc-900">{stats.totalCreators}</div>
@@ -134,15 +134,15 @@ export default function MarketplaceView({ creators, stats }: MarketplaceViewProp
           </div>
           <div className="p-3.5 rounded-xl bg-white border border-zinc-200/80 shadow-2xs">
             <div className="text-lg sm:text-xl font-bold text-zinc-900">{stats.totalAudienceReach.toLocaleString()}</div>
-            <div className="text-[11px] text-zinc-500 font-medium">Total Followers</div>
+            <div className="text-[11px] text-zinc-500 font-medium">Follower Reach</div>
           </div>
           <div className="p-3.5 rounded-xl bg-white border border-zinc-200/80 shadow-2xs">
-            <div className="text-lg sm:text-xl font-bold text-zinc-900">1 Week</div>
-            <div className="text-[11px] text-zinc-500 font-medium">Rental Duration</div>
+            <div className="text-lg sm:text-xl font-bold text-zinc-900">{stats.totalBookings}</div>
+            <div className="text-[11px] text-zinc-500 font-medium">Total Bookings</div>
           </div>
           <div className="p-3.5 rounded-xl bg-white border border-zinc-200/80 shadow-2xs">
-            <div className="text-lg sm:text-xl font-bold text-zinc-900">Instant</div>
-            <div className="text-[11px] text-zinc-500 font-medium">Banner Preview</div>
+            <div className="text-lg sm:text-xl font-bold text-zinc-900">{stats.totalVisits.toLocaleString()}</div>
+            <div className="text-[11px] text-zinc-500 font-medium">Website Visits</div>
           </div>
         </div>
       </section>

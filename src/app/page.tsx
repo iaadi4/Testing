@@ -14,7 +14,7 @@ export const metadata: Metadata = {
 };
 
 export default async function HomePage() {
-  const { creators, stats } = await getMarketplaceData();
+  const { creators, stats } = await getMarketplaceData({ recordVisit: true });
 
   return (
     <div className="min-h-screen bg-[#fafafa] bg-[radial-gradient(#e5e7eb_1.2px,transparent_1.2px)] [background-size:20px_20px] text-zinc-900 flex flex-col font-sans selection:bg-zinc-900 selection:text-white">
